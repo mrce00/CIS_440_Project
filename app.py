@@ -13,11 +13,23 @@ def index():
 # Route for the manager login page and authentication
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
 
-        # Authentication logic specific to manager 
+        # Authentication logic specific to manager
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT password FROM manager_table WHERE username = %s", (username,))
+        myresult = mycursor.fetchall()
+
+        
         if username == 'manager' and password == 'password':
             return redirect(url_for('dashboard'))
 
