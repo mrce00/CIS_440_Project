@@ -5,10 +5,12 @@ import webbrowser
 
 app = Flask(__name__)
 
+
 # Route for the home page
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 # Route for the manager login page and authentication
 @app.route('/login', methods=['GET', 'POST'])
@@ -28,17 +30,24 @@ def login():
         mycursor = mydb.cursor()
         mycursor.execute("SELECT password FROM manager_table WHERE username = %s", (username,))
         myresult = mycursor.fetchall()
+        mycursor.close()
 
-        if password == myresult[0][0]:
-            return redirect(url_for('dashboard'))
+        try:
+            if password == myresult[0][0]:
+                return redirect(url_for('dashboard'))
 
-        return 'Invalid Username/Password'
+            return 'Invalid Username/Password'
+        except:
+            return 'Invalid Username/Password'
+
     return render_template('login.html')
+
 
 # Route for the manager dashboard
 @app.route('/dashboard')
 def dashboard():
     return 'Manager Dashboard'
+
 
 # Route for handling button clicks
 @app.route('/button_clicked', methods=['POST'])
@@ -57,9 +66,11 @@ def button_clicked():
     # Test by printing results
     return str(myresult)
 
+
 # Function to automatically open the browser and navigate to the Flask app URL
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5000/')
+
 
 # Main entry point for running the Flask app
 if __name__ == '__main__':
