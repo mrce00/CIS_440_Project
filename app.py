@@ -5,15 +5,33 @@ import webbrowser
 
 app = Flask(__name__)
 
-
+# Route for the home page
 @app.route('/')
 def index():
     return render_template('index.html')
 
+# Route for the manager login page and authentication
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
 
+        # Authentication logic specific to manager 
+        if username == 'manager' and password == 'password':
+            return redirect(url_for('dashboard'))
+
+        return 'Invalid Username/Password'
+    return render_template('login.html')
+
+# Route for the manager dashboard
+@app.route('/dashboard')
+def dashboard():
+    return 'Manager Dashboard'
+
+# Route for handling button clicks
 @app.route('/button_clicked', methods=['POST'])
 def button_clicked():
-    # Handle the button click event here
     mydb = mysql.connector.connect(
         host="107.180.1.16",
         user="summer2024team2",
@@ -22,20 +40,17 @@ def button_clicked():
     )
 
     mycursor = mydb.cursor()
-
     mycursor.execute("SELECT * FROM manager_table")
-
     myresult = mycursor.fetchall()
 
-    for x in myresult:
-        return (x)
+    # Test by printing results
+    return str(myresult)
 
-
+# Function to automatically open the browser and navigate to the Flask app URL
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5000/')
 
-
+# Main entry point for running the Flask app
 if __name__ == '__main__':
-    # Start a timer to open the browser after Flask starts
     Timer(1, open_browser).start()
     app.run(debug=False)
