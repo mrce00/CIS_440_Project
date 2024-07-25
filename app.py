@@ -29,8 +29,7 @@ def login():
         mycursor.execute("SELECT password FROM manager_table WHERE username = %s", (username,))
         myresult = mycursor.fetchall()
 
-        
-        if username == 'manager' and password == 'password':
+        if password == myresult[0][0]:
             return redirect(url_for('dashboard'))
 
         return 'Invalid Username/Password'
