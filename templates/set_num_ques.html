@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Survey</title>
+    <title>Manager Dashboard</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -21,7 +21,7 @@
             display: block;
             margin: 10px 0 5px;
         }
-        input[type="text"], input[type="submit"], button {
+        input[type="number"] {
             width: 100%;
             padding: 10px;
             margin-bottom: 10px;
@@ -30,9 +30,16 @@
         }
         button {
             background-color: #4CAF50; /* Green */
+            border: none;
             color: white;
+            padding: 15px 32px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             font-size: 16px;
+            margin: 4px 2px;
             cursor: pointer;
+            border-radius: 4px;
         }
         button:hover {
             background-color: #45a049;
@@ -44,35 +51,24 @@
         }
     </style>
     <script>
-        function handleRewardIDSubmit(event) {
-            event.preventDefault(); // Prevent default form submission
-            document.getElementById('rewardIDForm').style.display = 'none';
-            document.getElementById('surveySection').style.display = 'block';
-            document.getElementById('message').textContent = 'Reward ID submitted. Please complete the survey.';
-        }
-
-        function handleSurveySubmit(event) {
-            event.preventDefault(); // Prevent default form submission
-            document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';
+        function handleSettingsSubmit(event) {
+            event.preventDefault();
+            const numQuestions = document.getElementById('numQuestions').value;
+            document.getElementById('message').textContent = `Number of questions set to: ${numQuestions}`;
+            // Here you would typically send the number to the server
+            // to store the setting and apply it to the respondent survey logic.
         }
     </script>
 </head>
 <body>
     <div class="container">
-        <h1>Survey</h1>
-
-        <!-- Reward ID Submission -->
-        <form id="rewardIDForm" onsubmit="handleRewardIDSubmit(event)">
-            <label for="rewardID">Reward ID:</label>
-            <input type="text" id="rewardID" name="rewardID" required>
-            <input type="submit" value="Submit Reward ID">
+        <h1>Manager Dashboard</h1>
+        <form onsubmit="handleSettingsSubmit(event)">
+            <label for="numQuestions">Number of Questions:</label>
+            <input type="number" id="numQuestions" name="numQuestions" min="1" required>
+            
+            <button type="submit">Set Number of Questions</button>
         </form>
-
-        <!-- Survey Section -->
-        <div id="surveySection" style="display:none;">
-            <button onclick="handleSurveySubmit(event)">Submit Survey</button>
-        </div>
-
         <p id="message" class="message"></p>
     </div>
 </body>
