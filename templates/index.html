@@ -1,34 +1,86 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flask Button</title>
+    <title>Survey</title>
     <style>
         body {
-            margin: 0;
             font-family: Arial, sans-serif;
             background-color: #f0f0f0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            flex-direction: column; /* Stack elements vertically */
+            flex-direction: column;
+            margin: 0;
         }
-        h1 {
+        .container {
+            max-width: 600px;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
             text-align: center;
         }
-        p {
-            text-align: center;
-            margin-bottom: 10px;
+        label, p {
+            margin: 10px 0;
+        }
+        input[type="text"], input[type="submit"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
         }
     </style>
+    <script>
+        function handleRewardIDSubmit(event) {
+            event.preventDefault(); // Prevent default form submission
+            document.getElementById('rewardIDForm').style.display = 'none';
+            document.getElementById('surveySection').style.display = 'block';
+            document.getElementById('message').textContent = 'Reward ID submitted. Please complete the survey.';
+        }
+
+        function handleSurveySubmit(event) {
+            event.preventDefault(); // Prevent default form submission
+            document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';
+        }
+    </script>
 </head>
 <body>
-    <div>
-        <h1>SQL Test</h1>
-        <p>Welcome to the homepage!</p>
-        <p><a href="{{ url_for('login') }}">Login</a> to access the dashboard.</p>
+    <div class="container">
+        <h1>Survey</h1>
+
+        <!-- Reward ID Submission -->
+        <form id="rewardIDForm" onsubmit="handleRewardIDSubmit(event)">
+            <label for="rewardID">Reward ID:</label>
+            <input type="text" id="rewardID" name="rewardID" required>
+            <input type="submit" value="Submit Reward ID">
+        </form>
+
+        <!-- Survey Section -->
+        <div id="surveySection" style="display:none;">
+            <button onclick="handleSurveySubmit(event)">Submit Survey</button>
+        </div>
+
+        <p id="message" class="message"></p>
     </div>
 </body>
 </html>
+
