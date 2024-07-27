@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .center {
+            text-align: center;
+        }
+        .form-container, .survey-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        /* Style for the modal */
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1; 
+            left: 0;
+            top: 0;
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgb(0,0,0); 
+            background-color: rgba(0,0,0,0.4); 
+            padding-top: 60px; 
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to the Dashboard</h1>
+    <p>Hello, {{ current_user.id }}!</p>
+    <p>This is your dashboard content.</p>
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+
+    <button id="createAccountBtn">Create Account</button>
+
+    <!-- Create Account Form in a Popup -->
+    <div id="createAccountModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="closeCreateAccountModal">&times;</span>
+            <h2>Create New Account</h2>
+            <form id="createAccountForm">
+                <label for="username">Username:</label><br>
+                <input type="text" id="username" name="username" required><br><br>
+                <label for="email">Email:</label><br>
+                <input type="email" id="email" name="email" required><br><br>
+                <label for="password">Password:</label><br>
+                <input type="password" id="password" name="password" required><br><br>
+                <label for="role">Role:</label><br>
+                <select id="role" name="role">
+                    <option value="user">User</option>
+                    <option value="manager">Manager</option>
+                </select><br><br>
+                <button type="submit">Create Account</button>
+                <button type="button" id="closeCreateAccountBtn">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <h2>Accounts</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Email</th>
+                <th>Role</th> <!-- New column for Role -->
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr>
+                <td>{{ account.id }}</td>
+                <td>{{ account.username }}</td>
+                <td>{{ account.email }}</td>
+                <td>{{ account.role }}</td> <!-- Display Role value -->
+                <td class="center">
+                    <a href="{{ url_for('edit_account', account_id=account.id) }}">Edit</a> |
+                    <a href="{{ url_for('delete_account', account_id=account.id) }}">Delete</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Survey Results Tab (for management) -->
+    <h2>Survey Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Productive</th>
+                <th>Obstacles</th>
+                <th>Support</th>
+                <th>Goals Met</th>
+                <th>Comments</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for survey in surveys %}
+            <tr>
+                <td>{{ survey.id }}</td>
+                <td>{{ survey.q1 }}</td>
+                <td>{{ survey.q2 }}</td>
+                <td>{{ survey.q3 }}</td>
+                <td>{{ survey.q4 }}</td>
+                <td>{{ survey.comments }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- JavaScript for handling modals and form submission -->
+    <script>
+        // Open Create Account Modal
+        document.getElementById('createAccountBtn').addEventListener('click', function() {
+            document.getElementById('createAccountModal').style.display = 'block';
+        });
+
+        // Close Create Account Modal
+        document.getElementById('closeCreateAccountBtn').addEventListener('click', function() {
+            document.getElementById('createAccountModal').style.display = 'none';
+        });
+
+        // Open Survey Modal
+        document.getElementById('takeSurveyBtn').addEventListener('click', function() {
+            document.getElementById('surveyModal').style.display = 'block';
+        });
+
+        // Close Survey Modal
+        document.getElementById('closeSurveyBtn').addEventListener('click', function() {
+            document.getElementById('surveyModal').style.display = 'none';
+        });
+
+        // Close Survey Modal (click on <span>)
+        document.getElementById('closeSurveyModal').addEventListener('click', function() {
+            document.getElementById('surveyModal').style.display = 'none';
+        });
+
+        // Handle Survey Form Submission
+        document.getElementById('surveyForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            var formData = new FormData(this);
+
+            fetch('/submit_survey', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload(); // Reload the page to show new survey results
+                } else {
+                    alert('Failed to submit survey');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to submit survey');
+            });
+        });
+    </script>
+</body>
+</html>
+
+
