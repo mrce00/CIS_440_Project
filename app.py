@@ -1,3 +1,5 @@
+import datetime
+
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, TextAreaField
@@ -5,6 +7,17 @@ from wtforms.validators import DataRequired, Length
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from threading import Timer
 import webbrowser
+import logging
+import mysql.connector
+
+logging.basicConfig(
+    filename="app.log",
+    encoding="utf-8",
+    filemode="a",
+    format="{asctime} - {levelname} - {message}",
+    style="{",
+    datefmt="%Y-%m-%d %H:%M",
+    )
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
@@ -15,8 +28,6 @@ accounts = [
     {'id': 2, 'username': 'user2', 'email': 'user2@example.com', 'role': 'manager'},
     {'id': 3, 'username': 'user3', 'email': 'user3@example.com', 'role': 'user'}
 ]
-
-surveys = []  # List to store survey responses
 
 # Flask-Login configuration
 login_manager = LoginManager()
@@ -81,28 +92,36 @@ def logout():
 @app.route('/dashboard')
 @login_required
 def dashboard():
-    return render_template('dashboard.html', accounts=accounts, surveys=surveys)
+    return render_template('dashboard.html', accounts=accounts)
 
 @app.route('/submit_survey', methods=['POST'])
-@login_required
 def submit_survey():
+    reward_id = request.form['rewardID']
     q1 = request.form.get('q1')
     q2 = request.form.get('q2')
     q3 = request.form.get('q3')
     q4 = request.form.get('q4')
     comments = request.form.get('comments')
+    datenow = str(datetime.datetime.now())
 
-    survey_id = len(surveys) + 1
-    surveys.append({
-        'id': survey_id,
-        'q1': q1,
-        'q2': q2,
-        'q3': q3,
-        'q4': q4,
-        'comments': comments
-    })
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    try:
+        mycursor = mydb.cursor()
+        sql = "INSERT INTO responses_table (q1, q2, q3, q4, comments, period) VALUES (%s,%s,%s,%s,%s,%s)"
+        val = (q1, q2, q3, q4, comments, datenow)
+        mycursor.execute(sql, val)
+        mydb.commit()
+        mycursor.close()
+        return redirect(url_for('index'))
+    except Exception as error:
+        logging.warning(error)
+        mycursor.close()
 
-    return jsonify({'status': 'success'})
 
 @app.route('/create_account', methods=['POST'])
 @login_required

@@ -63,40 +63,57 @@
             <div class="modal-content">
                 <h2>Weekly Survey</h2>
 
-
-                    <!-- Reward ID  -->
-                        <label for="rewardID">Reward ID:</label>
-                        <input type="text" id="rewardID" name="rewardID" required>
-
-                    <!-- Survey Section -->
-                    <div id="surveySection" style="display:none;">
-                        <button onclick="handleSurveySubmit(event)">Submit Survey</button>
-
-                </div>
-                <form id="surveyForm">
+                <form id="surveyForm" action="{{ url_for('submit_survey') }}" method="POST">
+                    <label for="rewardID">Reward ID:</label>
+                    <input type="text" id="rewardID" name="rewardID" required>
                     <label>1. Did you feel productive this week?</label><br>
-                    <input type="radio" id="q1_yes" name="q1" value="yes">
-                    <label for="q1_yes">Yes</label>
-                    <input type="radio" id="q1_no" name="q1" value="no">
-                    <label for="q1_no">No</label><br><br>
+                    <input type="radio" id="q1_1" name="q1" value="1">
+                    <label for="q1_1">1</label>
+                    <input type="radio" id="q1_2" name="q1" value="2">
+                    <label for="q1_2">2</label>
+                    <input type="radio" id="q1_3" name="q1" value="3">
+                    <label for="q1_3">3</label>
+                    <input type="radio" id="q1_4" name="q1" value="4">
+                    <label for="q1_4">4</label>
+                    <input type="radio" id="q1_5" name="q1" value="5">
+                    <label for="q1_5">5</label>
+                    <br><br>
 
                     <label>2. Did you have any obstacles that affected your work?</label><br>
-                    <input type="radio" id="q2_yes" name="q2" value="yes">
-                    <label for="q2_yes">Yes</label>
-                    <input type="radio" id="q2_no" name="q2" value="no">
-                    <label for="q2_no">No</label><br><br>
+                    <input type="radio" id="q2_1" name="q2" value="1">
+                    <label for="q2_1">1</label>
+                    <input type="radio" id="q2_2" name="q2" value="2">
+                    <label for="q2_2">2</label>
+                    <input type="radio" id="q2_3" name="q2" value="3">
+                    <label for="q2_3">3</label>
+                    <input type="radio" id="q2_4" name="q2" value="4">
+                    <label for="q2_4">4</label>
+                    <input type="radio" id="q2_5" name="q2" value="5">
+                    <label for="q2_5">5</label><br><br>
 
                     <label>3. Were you satisfied with the support you received?</label><br>
-                    <input type="radio" id="q3_yes" name="q3" value="yes">
-                    <label for="q3_yes">Yes</label>
-                    <input type="radio" id="q3_no" name="q3" value="no">
-                    <label for="q3_no">No</label><br><br>
+                    <input type="radio" id="q3_1" name="q3" value="1">
+                    <label for="q3_1">1</label>
+                    <input type="radio" id="q3_2" name="q3" value="2">
+                    <label for="q3_2">2</label>
+                    <input type="radio" id="q3_3" name="q3" value="3">
+                    <label for="q3_3">3</label>
+                    <input type="radio" id="q3_4" name="q3" value="4">
+                    <label for="q3_4">4</label>
+                    <input type="radio" id="q3_5" name="q3" value="5">
+                    <label for="q3_5">5</label><br><br>
 
                     <label>4. Did you meet your goals for the week?</label><br>
-                    <input type="radio" id="q4_yes" name="q4" value="yes">
-                    <label for="q4_yes">Yes</label>
-                    <input type="radio" id="q4_no" name="q4" value="no">
-                    <label for="q4_no">No</label><br><br>
+                    <input type="radio" id="q4_1" name="q4" value="1">
+                    <label for="q4_1">1</label>
+                    <input type="radio" id="q4_2" name="q4" value="2">
+                    <label for="q4_2">2</label>
+                    <input type="radio" id="q4_3" name="q4" value="3">
+                    <label for="q4_3">3</label>
+                    <input type="radio" id="q4_4" name="q4" value="4">
+                    <label for="q4_4">4</label>
+                    <input type="radio" id="q4_5" name="q4" value="5">
+                    <label for="q4_5">5</label><br><br>
 
                     <label>5. Additional Comments:</label><br>
                     <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
@@ -110,28 +127,11 @@
 <script>
     document.getElementById('surveyForm').addEventListener('submit', function(event) {
         event.preventDefault(); // Prevent the default form submission
+    }
 
-        var formData = new FormData(this);
-
-        fetch('/submit_survey', {
-            method: 'POST',
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    location.reload(); // Reload the page to show new survey results
-                } else {
-                    alert('Failed to submit survey');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Failed to submit survey');
-            });})
     function handleSurveySubmit(event) {
         event.preventDefault(); // Prevent default form submission
-        document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';
-    }
+        document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';}
+
 </script>
 </html>
