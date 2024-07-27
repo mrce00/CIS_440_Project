@@ -7,17 +7,8 @@ from wtforms.validators import DataRequired, Length
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from threading import Timer
 import webbrowser
-import logging
 import mysql.connector
 
-logging.basicConfig(
-    filename="app.log",
-    encoding="utf-8",
-    filemode="a",
-    format="{asctime} - {levelname} - {message}",
-    style="{",
-    datefmt="%Y-%m-%d %H:%M",
-    )
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
@@ -120,7 +111,6 @@ def submit_survey():
         flash("Survey Submitted!", "success")
         return render_template('index.html')
     except Exception as error:
-        logging.warning(error)
         mycursor.close()
 
 
