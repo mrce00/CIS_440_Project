@@ -79,7 +79,6 @@
     <p><a href="{{ url_for('logout') }}">Logout</a></p>
 
     <button id="createAccountBtn">Create Account</button>
-    <button id="takeSurveyBtn">Take Weekly Survey</button>
 
     <!-- Create Account Form in a Popup -->
     <div id="createAccountModal" class="modal">
@@ -100,44 +99,6 @@
                 </select><br><br>
                 <button type="submit">Create Account</button>
                 <button type="button" id="closeCreateAccountBtn">Cancel</button>
-            </form>
-        </div>
-    </div>
-
-    <!-- Take Survey Form in a Popup -->
-    <div id="surveyModal" class="modal">
-        <div class="modal-content">
-            <span class="close" id="closeSurveyModal">&times;</span>
-            <h2>Weekly Survey</h2>
-            <form id="surveyForm">
-                <label>1. Did you feel productive this week?</label><br>
-                <input type="radio" id="q1_yes" name="q1" value="yes">
-                <label for="q1_yes">Yes</label>
-                <input type="radio" id="q1_no" name="q1" value="no">
-                <label for="q1_no">No</label><br><br>
-
-                <label>2. Did you have any obstacles that affected your work?</label><br>
-                <input type="radio" id="q2_yes" name="q2" value="yes">
-                <label for="q2_yes">Yes</label>
-                <input type="radio" id="q2_no" name="q2" value="no">
-                <label for="q2_no">No</label><br><br>
-
-                <label>3. Were you satisfied with the support you received?</label><br>
-                <input type="radio" id="q3_yes" name="q3" value="yes">
-                <label for="q3_yes">Yes</label>
-                <input type="radio" id="q3_no" name="q3" value="no">
-                <label for="q3_no">No</label><br><br>
-
-                <label>4. Did you meet your goals for the week?</label><br>
-                <input type="radio" id="q4_yes" name="q4" value="yes">
-                <label for="q4_yes">Yes</label>
-                <input type="radio" id="q4_no" name="q4" value="no">
-                <label for="q4_no">No</label><br><br>
-
-                <label>5. Additional Comments:</label><br>
-                <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
-                <button type="submit">Submit Survey</button>
-                <button type="button" id="closeSurveyBtn">Cancel</button>
             </form>
         </div>
     </div>
