@@ -94,7 +94,7 @@ def logout():
 def dashboard():
     return render_template('dashboard.html', accounts=accounts)
 
-@app.route('/submit_survey', methods=['POST'])
+@app.route('/submit_survey', methods=['GET', 'POST'])
 def submit_survey():
     reward_id = request.form['rewardID']
     q1 = request.form.get('q1')
@@ -117,7 +117,8 @@ def submit_survey():
         mycursor.execute(sql, val)
         mydb.commit()
         mycursor.close()
-        return redirect(url_for('index'))
+        flash("Survey Submitted!", "success")
+        return render_template('index.html')
     except Exception as error:
         logging.warning(error)
         mycursor.close()
