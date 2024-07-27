@@ -54,9 +54,27 @@
         function handleSettingsSubmit(event) {
             event.preventDefault();
             const numQuestions = document.getElementById('numQuestions').value;
+            if (numQuestions < 1 || numQuestions > 50) {
+                document.getElementById('message').textContent = 'Please select a number between 1 and 50.';
+                return;
+            }
             document.getElementById('message').textContent = `Number of questions set to: ${numQuestions}`;
-            // Here you would typically send the number to the server
-            // to store the setting and apply it to the respondent survey logic.
+
+            // Example of sending data to the server
+            fetch('/updateNumQuestions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ numQuestions: numQuestions }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+            });
         }
     </script>
 </head>
@@ -65,7 +83,7 @@
         <h1>Manager Dashboard</h1>
         <form onsubmit="handleSettingsSubmit(event)">
             <label for="numQuestions">Number of Questions:</label>
-            <input type="number" id="numQuestions" name="numQuestions" min="1" required>
+            <input type="number" id="numQuestions" name="numQuestions" min="1" max="50" required>
             
             <button type="submit">Set Number of Questions</button>
         </form>
