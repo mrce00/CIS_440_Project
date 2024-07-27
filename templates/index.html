@@ -22,6 +22,39 @@
             text-align: center;
             margin-bottom: 10px;
         }
+        .container {
+            max-width: 600px;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+        label, p {
+            margin: 10px 0;
+        }
+        input[type="text"], input[type="submit"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -29,6 +62,17 @@
         <div id="surveyModal" class="modal">
             <div class="modal-content">
                 <h2>Weekly Survey</h2>
+
+
+                    <!-- Reward ID  -->
+                        <label for="rewardID">Reward ID:</label>
+                        <input type="text" id="rewardID" name="rewardID" required>
+
+                    <!-- Survey Section -->
+                    <div id="surveySection" style="display:none;">
+                        <button onclick="handleSurveySubmit(event)">Submit Survey</button>
+
+                </div>
                 <form id="surveyForm">
                     <label>1. Did you feel productive this week?</label><br>
                     <input type="radio" id="q1_yes" name="q1" value="yes">
@@ -63,4 +107,31 @@
         <p><a href="{{ url_for('login') }}">Login</a> to access the manager dashboard.</p>
     </div>
 </body>
+<script>
+    document.getElementById('surveyForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        var formData = new FormData(this);
+
+        fetch('/submit_survey', {
+            method: 'POST',
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    location.reload(); // Reload the page to show new survey results
+                } else {
+                    alert('Failed to submit survey');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to submit survey');
+            });})
+    function handleSurveySubmit(event) {
+        event.preventDefault(); // Prevent default form submission
+        document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';
+    }
+</script>
 </html>
