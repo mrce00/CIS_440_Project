@@ -161,3 +161,56 @@ def open_browser():
 if __name__ == '__main__':
     Timer(1, open_browser).start()
     app.run(debug=False, port=5001)
+from flask import Flask, request, jsonify
+
+# Initialize Flask application
+app = Flask(__name__)
+
+# In-memory databases for simplicity
+general_questions = []  # List to store general questions
+department_questions = {}  # Dictionary to store department-specific questions
+respondent_ratings = {}  # Dictionary to store respondent ratings
+
+# Endpoint to add a general question
+@app.route('/add_general_question', methods=['POST'])
+def add_general_question():
+    question = request.json.get('question')
+    general_questions.append(question)
+    return jsonify({'status': 'success', 'message': 'General question added'})
+
+# Endpoint to add a department-specific question
+@app.route('/add_department_question', methods=['POST'])
+def add_department_question():
+    department = request.json.get('department')
+    question = request.json.get('question')
+    if department not in department_questions:
+        department_questions[department] = []
+    department_questions[department].append(question)
+    return jsonify({'status': 'success', 'message': 'Department question added'})
+
+# Endpoint to retrieve all questions
+@app.route('/get_questions', methods=['GET'])
+def get_questions():
+    return jsonify({
+        'general_questions': general_questions,
+        'department_questions': department_questions
+    })
+
+# Endpoint to rate a question and possibly trigger a follow-up
+@app.route('/rate_question', methods=['POST'])
+def rate_question():
+    respondent_id = request.json.get('respondent_id')
+    question_id = request.json.get('question_id')
+    rating = request.json.get('rating')
+    
+    if respondent_id not in respondent_ratings:
+        respondent_ratings[respondent_id] = {}
+    respondent_ratings[respondent_id][question_id] = rating
+    
+    if rating < 3:
+        return jsonify({'status': 'success', 'follow_up': 'Please provide more details'})
+    return jsonify({'status': 'success', 'message': 'Thank you for your feedback'})
+
+# Run the Flask application
+if __name__ == '__main__':
+    app.run(debug=True)
