@@ -50,6 +50,9 @@
         button:hover {
             background-color: #45a049;
         }
+        .additional-details {
+            display: none; /* Hide additional details by default */
+        }
         .message {
             margin-top: 20px;
             color: green;
@@ -58,9 +61,6 @@
     </style>
 </head>
 <body>
-    {% for mesg in get_flashed_messages() %}
-    <h1>{{ mesg }}</h1>
-    {% endfor %}
     <div>
         <div id="surveyModal" class="modal">
             <div class="modal-content">
@@ -69,6 +69,7 @@
                 <form id="surveyForm" action="{{ url_for('submit_survey') }}" method="POST">
                     <label for="rewardID">Reward ID:</label>
                     <input type="text" id="rewardID" name="rewardID" required>
+                    
                     <label>1. Did you feel productive this week?</label><br>
                     <input type="radio" id="q1_1" name="q1" value="1">
                     <label for="q1_1">1</label>
@@ -82,6 +83,11 @@
                     <label for="q1_5">5</label>
                     <br><br>
 
+                    <div id="q1AdditionalDetails" class="additional-details">
+                        <label for="q1Details">Please provide more details:</label><br>
+                        <textarea id="q1Details" name="q1Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
+
                     <label>2. Did you have any obstacles that affected your work?</label><br>
                     <input type="radio" id="q2_1" name="q2" value="1">
                     <label for="q2_1">1</label>
@@ -93,6 +99,11 @@
                     <label for="q2_4">4</label>
                     <input type="radio" id="q2_5" name="q2" value="5">
                     <label for="q2_5">5</label><br><br>
+
+                    <div id="q2AdditionalDetails" class="additional-details">
+                        <label for="q2Details">Please provide more details:</label><br>
+                        <textarea id="q2Details" name="q2Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
 
                     <label>3. Were you satisfied with the support you received?</label><br>
                     <input type="radio" id="q3_1" name="q3" value="1">
@@ -106,6 +117,11 @@
                     <input type="radio" id="q3_5" name="q3" value="5">
                     <label for="q3_5">5</label><br><br>
 
+                    <div id="q3AdditionalDetails" class="additional-details">
+                        <label for="q3Details">Please provide more details:</label><br>
+                        <textarea id="q3Details" name="q3Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
+
                     <label>4. Did you meet your goals for the week?</label><br>
                     <input type="radio" id="q4_1" name="q4" value="1">
                     <label for="q4_1">1</label>
@@ -118,23 +134,45 @@
                     <input type="radio" id="q4_5" name="q4" value="5">
                     <label for="q4_5">5</label><br><br>
 
+                    <div id="q4AdditionalDetails" class="additional-details">
+                        <label for="q4Details">Please provide more details:</label><br>
+                        <textarea id="q4Details" name="q4Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
+
                     <label>5. Additional Comments:</label><br>
                     <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
                     <button type="submit">Submit Survey</button>
+
                 </form>
             </div>
         </div>
         <p><a href="{{ url_for('login') }}">Login</a> to access the manager dashboard.</p>
     </div>
+    
+    <script>
+        function handleSurveySubmit(event) {
+            event.preventDefault(); // Prevent default form submission
+            document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';
+        }
+
+        function toggleDetails(question) {
+            var selectedRating = document.querySelector(`input[name="${question}"]:checked`);
+            var detailsBox = document.getElementById(`${question}AdditionalDetails`);
+            if (selectedRating && ['1', '2', '3'].includes(selectedRating.value)) {
+                detailsBox.style.display = 'block';
+            } else {
+                detailsBox.style.display = 'none';
+            }
+        }
+
+        document.querySelectorAll('input[type="radio"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                var question = this.name;
+                toggleDetails(question);
+            });
+        });
+
+        document.getElementById('surveyForm').addEventListener('submit', handleSurveySubmit);
+    </script>
 </body>
-<script>
-    document.getElementById('surveyForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
-    }
-
-    function handleSurveySubmit(event) {
-        event.preventDefault(); // Prevent default form submission
-        document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';}
-
-</script>
 </html>
