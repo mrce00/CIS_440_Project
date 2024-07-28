@@ -9,6 +9,7 @@ from threading import Timer
 import webbrowser
 import mysql.connector
 
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
 
