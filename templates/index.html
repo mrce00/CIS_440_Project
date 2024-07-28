@@ -58,13 +58,24 @@
             color: green;
             font-weight: bold;
         }
+
+        .generate-reward-link {
+            color: #007BFF; 
+            text-decoration: none; 
+            font-size: 14px; 
+            margin-top: 10px;
+            display: block;
+        }
+
+        .generate-reward-link:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+
     </style>
 </head>
 <body>
-    {% for mesg in get_flashed_messages() %}
-    <h1>{{ mesg }}</h1>
-{% endfor %}
-    <div>
+      <div>
         <div id="surveyModal" class="modal">
             <div class="modal-content">
                 <h2>Weekly Survey</h2>
@@ -72,6 +83,9 @@
                 <form id="surveyForm" action="{{ url_for('submit_survey') }}" method="POST">
                     <label for="rewardID">Reward ID:</label>
                     <input type="text" id="rewardID" name="rewardID" required>
+
+                <!-- Generate Reward ID Link -->
+                <p><a href="{{ url_for('generate_reward_id') }}" class="generate-reward-link">Don't have a Reward ID? Click here to generate one</a></p>
                     
                     <label>1. Did you feel productive this week?</label><br>
                     <input type="radio" id="q1_1" name="q1" value="1">
@@ -149,6 +163,7 @@
                 </form>
             </div>
         </div>
+
         <p><a href="{{ url_for('login') }}">Login</a> to access the manager dashboard.</p>
     </div>
     
