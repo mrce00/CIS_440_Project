@@ -153,6 +153,30 @@ def submit_survey():
 def set_num_ques():
     return render_template('set_num_ques.html')
 
+@app.route('/set_num_ques_value', methods=['POST'])
+@login_required
+def set_num_ques_value():
+    num = request.form.get('numQuestions')
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    try:
+        mycursor = mydb.cursor()
+        query = "UPDATE ques_num SET value = %s WHERE public_key = 1"
+        mycursor.execute(query, (num,))
+        mydb.commit()
+        mycursor.close()
+        flash("Question Number updated!", "success")
+        return redirect(url_for('set_num_ques'))
+    except Exception as error:
+        mydb.rollback()  # Rollback to handle errors
+        mycursor.close()
+        flash(f"An error occurred: {error}", "error")
+        return redirect(url_for('set_num_ques'))
+
 
 @app.route('/create_account', methods=['POST'])
 @login_required

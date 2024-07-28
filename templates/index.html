@@ -63,7 +63,7 @@
 <body>
     {% for mesg in get_flashed_messages() %}
     <h1>{{ mesg }}</h1>
-{% endfor %}
+    {% endfor %}
     <div>
         <div id="surveyModal" class="modal">
             <div class="modal-content">
