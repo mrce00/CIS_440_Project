@@ -118,9 +118,7 @@ def submit_survey():
     )
     try:
         mycursor = mydb.cursor()
-        # Updated SQL query to include details fields
-        sql = """INSERT INTO responses_table (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, period)
-                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        sql = "INSERT INTO responses_table (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, period) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
         mycursor.execute(sql, val)
         mydb.commit()
