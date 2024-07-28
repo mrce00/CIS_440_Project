@@ -36,11 +36,10 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    if user_id == 'magarvin':
+    if user_id == user_id:
         user = User()
         user.id = user_id
         return user
-    return None
 
 
 # WTForms LoginForm
@@ -70,18 +69,34 @@ def login():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        # SQL Pending
-        if username == 'magarvin' and password == 'CIS440':
-            user = User()
-            user.id = username
-            login_user(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
+
+        mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+        )
+
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT password FROM manager_table WHERE username = %s", (username,))
+        myresult = mycursor.fetchall()
+        mycursor.close()
+
+        try:
+            if password == myresult[0][0]:
+                user = User()
+                user.id = username
+                login_user(user)
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                 flash('Login unsuccessful. Please check your username and password.', 'danger')
+                 return render_template('login.html', form=form)
+        except:
             flash('Login unsuccessful. Please check your username and password.', 'danger')
+            return render_template('login.html', form=form)
 
     return render_template('login.html', form=form)
-
 
 @app.route('/logout')
 @login_required
