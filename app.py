@@ -13,6 +13,9 @@ import mysql.connector
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
 
+# Set threshold value for write-in answers
+threshold = 3
+
 # Example data
 accounts = [
     {'id': 1, 'username': 'user1', 'email': 'user1@example.com', 'role': 'user'},
@@ -85,13 +88,17 @@ def logout():
 def dashboard():
     return render_template('dashboard.html', accounts=accounts)
 
-@app.route('/submit_survey', methods=['GET', 'POST'])
+@app.route('/submit_survey', methods=['POST'])
 def submit_survey():
-    reward_id = request.form['rewardID']
+    # Retrieve form data
     q1 = request.form.get('q1')
+    q1_details = request.form.get('q1Details') if q1 in ['1', '2', '3'] else None
     q2 = request.form.get('q2')
+    q2_details = request.form.get('q2Details') if q2 in ['1', '2', '3'] else None
     q3 = request.form.get('q3')
+    q3_details = request.form.get('q3Details') if q3 in ['1', '2', '3'] else None
     q4 = request.form.get('q4')
+    q4_details = request.form.get('q4Details') if q4 in ['1', '2', '3'] else None
     comments = request.form.get('comments')
     datenow = str(datetime.datetime.now())
 
@@ -103,15 +110,20 @@ def submit_survey():
     )
     try:
         mycursor = mydb.cursor()
-        sql = "INSERT INTO responses_table (q1, q2, q3, q4, comments, period) VALUES (%s,%s,%s,%s,%s,%s)"
-        val = (q1, q2, q3, q4, comments, datenow)
+        # Updated SQL query to include details fields
+        sql = """INSERT INTO responses_table (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, period)
+                 VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"""
+        val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
         mycursor.execute(sql, val)
         mydb.commit()
         mycursor.close()
         flash("Survey Submitted!", "success")
-        return render_template('index.html')
+        return redirect(url_for('index'))
     except Exception as error:
+        mydb.rollback()  # Rollback to handle errors
         mycursor.close()
+        flash(f"An error occurred: {error}", "error")
+        return redirect(url_for('index'))
 
 
 @app.route('/create_account', methods=['POST'])
