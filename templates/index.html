@@ -61,6 +61,9 @@
     </style>
 </head>
 <body>
+    {% for mesg in get_flashed_messages() %}
+    <h1>{{ mesg }}</h1>
+{% endfor %}
     <div>
         <div id="surveyModal" class="modal">
             <div class="modal-content">
@@ -152,7 +155,6 @@
     <script>
         function handleSurveySubmit(event) {
             event.preventDefault(); // Prevent default form submission
-            document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';
         }
 
         function toggleDetails(question) {
@@ -172,7 +174,6 @@
             });
         });
 
-        document.getElementById('surveyForm').addEventListener('submit', handleSurveySubmit);
     </script>
 </body>
 </html>
