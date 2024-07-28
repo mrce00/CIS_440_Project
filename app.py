@@ -9,7 +9,6 @@ from threading import Timer
 import webbrowser
 import mysql.connector
 
-
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
 
@@ -28,9 +27,11 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
 
+
 # User class
 class User(UserMixin):
     pass
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -40,11 +41,13 @@ def load_user(user_id):
         return user
     return None
 
+
 # WTForms LoginForm
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired(), Length(min=6)])
     submit = SubmitField('Login')
+
 
 # WTForms SurveyForm
 class SurveyForm(FlaskForm):
@@ -54,9 +57,11 @@ class SurveyForm(FlaskForm):
     q4 = StringField('Did you meet your goals for the week?', validators=[DataRequired()])
     comments = TextAreaField('Additional Comments')
 
+
 @app.route('/')
 def index():
     return render_template('index.html')
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -64,7 +69,7 @@ def login():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        
+        # SQL Pending
         if username == 'magarvin' and password == 'CIS440':
             user = User()
             user.id = username
@@ -73,8 +78,9 @@ def login():
             return redirect(url_for('dashboard'))
         else:
             flash('Login unsuccessful. Please check your username and password.', 'danger')
-    
+
     return render_template('login.html', form=form)
+
 
 @app.route('/logout')
 @login_required
@@ -83,10 +89,12 @@ def logout():
     flash('You have been logged out.', 'info')
     return redirect(url_for('index'))
 
+
 @app.route('/dashboard')
 @login_required
 def dashboard():
     return render_template('dashboard.html', accounts=accounts)
+
 
 @app.route('/submit_survey', methods=['POST'])
 def submit_survey():
@@ -132,11 +140,13 @@ def create_account():
     # Placeholder for account creation logic
     return jsonify({'status': 'success'})
 
+
 @app.route('/edit_account/<int:account_id>', methods=['GET', 'POST'])
 @login_required
 def edit_account(account_id):
     # Placeholder for editing account logic
     return f"Edit Account {account_id}"
+
 
 @app.route('/delete_account/<int:account_id>')
 @login_required
@@ -144,8 +154,10 @@ def delete_account(account_id):
     # Placeholder for deleting account logic
     return redirect(url_for('dashboard'))
 
+
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5001/')
+
 
 if __name__ == '__main__':
     Timer(1, open_browser).start()
