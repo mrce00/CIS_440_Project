@@ -123,6 +123,7 @@ def submit_survey():
         val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
         mycursor.execute(sql, val)
         mydb.commit()
+
         mycursor.close()
         flash("Survey Submitted!", "success")
         return redirect(url_for('index'))
@@ -131,6 +132,11 @@ def submit_survey():
         mycursor.close()
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
+
+@app.route('/set_num_ques')
+@login_required
+def set_num_ques():
+    return render_template('set_num_ques.html')
 
 
 @app.route('/create_account', methods=['POST'])
