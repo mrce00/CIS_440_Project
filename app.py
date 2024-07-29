@@ -37,11 +37,10 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    if user_id == 'magarvin':
+    if user_id == user_id:
         user = User()
         user.id = user_id
         return user
-    return None
 
 
 # WTForms LoginForm
@@ -71,18 +70,34 @@ def login():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        # SQL Pending
-        if username == 'magarvin' and password == 'CIS440':
-            user = User()
-            user.id = username
-            login_user(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
+
+        mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+        )
+
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT password FROM manager_table WHERE username = %s", (username,))
+        myresult = mycursor.fetchall()
+        mycursor.close()
+
+        try:
+            if password == myresult[0][0]:
+                user = User()
+                user.id = username
+                login_user(user)
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                 flash('Login unsuccessful. Please check your username and password.', 'danger')
+                 return render_template('login.html', form=form)
+        except:
             flash('Login unsuccessful. Please check your username and password.', 'danger')
+            return render_template('login.html', form=form)
 
     return render_template('login.html', form=form)
-
 
 @app.route('/logout')
 @login_required
@@ -124,6 +139,7 @@ def submit_survey():
         val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
         mycursor.execute(sql, val)
         mydb.commit()
+
         mycursor.close()
         flash("Survey Submitted!", "success")
         return redirect(url_for('index'))
@@ -132,6 +148,35 @@ def submit_survey():
         mycursor.close()
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
+
+@app.route('/set_num_ques')
+@login_required
+def set_num_ques():
+    return render_template('set_num_ques.html')
+
+@app.route('/set_num_ques_value', methods=['POST'])
+@login_required
+def set_num_ques_value():
+    num = request.form.get('numQuestions')
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    try:
+        mycursor = mydb.cursor()
+        query = "UPDATE ques_num SET value = %s WHERE public_key = 1"
+        mycursor.execute(query, (num,))
+        mydb.commit()
+        mycursor.close()
+        flash("Question Number updated!", "success")
+        return redirect(url_for('set_num_ques'))
+    except Exception as error:
+        mydb.rollback()  # Rollback to handle errors
+        mycursor.close()
+        flash(f"An error occurred: {error}", "error")
+        return redirect(url_for('set_num_ques'))
 
 
 @app.route('/create_account', methods=['POST'])

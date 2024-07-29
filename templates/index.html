@@ -76,6 +76,11 @@
 </head>
 <body>
       <div>
+    {% for mesg in get_flashed_messages() %}
+    <h1>{{ mesg }}</h1>
+    {% endfor %}
+    <div>
+
         <div id="surveyModal" class="modal">
             <div class="modal-content">
                 <h2>Weekly Survey</h2>
