@@ -8,6 +8,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from threading import Timer
 import webbrowser
 import mysql.connector
+import uuid
 
 
 app = Flask(__name__)
@@ -202,15 +203,6 @@ def delete_account(account_id):
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5001/')
 
-
-if __name__ == '__main__':
-    Timer(1, open_browser).start()
-    app.run(debug=False, port=5001)
-from flask import Flask, request, jsonify
-
-# Initialize Flask application
-app = Flask(__name__)
-
 # In-memory databases for simplicity
 general_questions = []  # List to store general questions
 department_questions = {}  # Dictionary to store department-specific questions
@@ -247,7 +239,7 @@ def rate_question():
     respondent_id = request.json.get('respondent_id')
     question_id = request.json.get('question_id')
     rating = request.json.get('rating')
-    
+
     if respondent_id not in respondent_ratings:
         respondent_ratings[respondent_id] = {}
     respondent_ratings[respondent_id][question_id] = rating
@@ -256,6 +248,45 @@ def rate_question():
         return jsonify({'status': 'success', 'follow_up': 'Please provide more details'})
     return jsonify({'status': 'success', 'message': 'Thank you for your feedback'})
 
+# Endpoint to generate a reward ID and store it in the database.
+@app.route('/generate_reward_id', methods=['POST'])
+def generate_reward_id():
+    try:
+        # Generate a new UUID for the reward ID
+        new_reward_id = str(uuid.uuid4())
+
+        # Connect to the database
+        mydb = mysql.connector.connect(
+            host="107.180.1.16",
+            user="summer2024team2",
+            password="summer2024team2",
+            database="summer2024team2"
+        )
+        mycursor = mydb.cursor()
+
+        # Insert the new reward ID into the database
+        sql = "INSERT INTO rewards_table (rewards_table) VALUES (%s)"
+        mycursor.execute(sql, (new_reward_id,))
+        mydb.commit()
+
+        # Return a message with the generated reward ID
+        return jsonify({
+            'status': 'success',
+            'message': 'Your reward ID has been generated successfully.',
+            'reward_id': new_reward_id
+        })
+    except Exception as e:
+        # Handle errors and return a descriptive message
+        return jsonify({
+            'status': 'error',
+            'message': f'An error occurred: {str(e)}'
+        }), 500
+    # Close the connection
+    finally:
+        mycursor.close()
+        mydb.close()
+
 # Run the Flask application
 if __name__ == '__main__':
-    app.run(debug=True)
+    Timer(1, open_browser).start()
+    app.run(debug=False, port=5001)
