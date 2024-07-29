@@ -1,4 +1,5 @@
 import datetime
+import random
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_wtf import FlaskForm
@@ -9,7 +10,6 @@ from threading import Timer
 import webbrowser
 import mysql.connector
 import uuid
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
@@ -72,10 +72,10 @@ def login():
         password = form.password.data
 
         mydb = mysql.connector.connect(
-        host="107.180.1.16",
-        user="summer2024team2",
-        password="summer2024team2",
-        database="summer2024team2"
+            host="107.180.1.16",
+            user="summer2024team2",
+            password="summer2024team2",
+            database="summer2024team2"
         )
 
         mycursor = mydb.cursor()
@@ -91,13 +91,14 @@ def login():
                 flash('Login successful!', 'success')
                 return redirect(url_for('dashboard'))
             else:
-                 flash('Login unsuccessful. Please check your username and password.', 'danger')
-                 return render_template('login.html', form=form)
+                flash('Login unsuccessful. Please check your username and password.', 'danger')
+                return render_template('login.html', form=form)
         except:
             flash('Login unsuccessful. Please check your username and password.', 'danger')
             return render_template('login.html', form=form)
 
     return render_template('login.html', form=form)
+
 
 @app.route('/logout')
 @login_required
@@ -149,10 +150,12 @@ def submit_survey():
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
 
+
 @app.route('/set_num_ques')
 @login_required
 def set_num_ques():
     return render_template('set_num_ques.html')
+
 
 @app.route('/set_num_ques_value', methods=['POST'])
 @login_required
@@ -203,10 +206,12 @@ def delete_account(account_id):
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5001/')
 
+
 # In-memory databases for simplicity
 general_questions = []  # List to store general questions
 department_questions = {}  # Dictionary to store department-specific questions
 respondent_ratings = {}  # Dictionary to store respondent ratings
+
 
 # Endpoint to add a general question
 @app.route('/add_general_question', methods=['POST'])
@@ -214,6 +219,7 @@ def add_general_question():
     question = request.json.get('question')
     general_questions.append(question)
     return jsonify({'status': 'success', 'message': 'General question added'})
+
 
 # Endpoint to add a department-specific question
 @app.route('/add_department_question', methods=['POST'])
@@ -225,6 +231,7 @@ def add_department_question():
     department_questions[department].append(question)
     return jsonify({'status': 'success', 'message': 'Department question added'})
 
+
 # Endpoint to retrieve all questions
 @app.route('/get_questions', methods=['GET'])
 def get_questions():
@@ -232,6 +239,7 @@ def get_questions():
         'general_questions': general_questions,
         'department_questions': department_questions
     })
+
 
 # Endpoint to rate a question and possibly trigger a follow-up
 @app.route('/rate_question', methods=['POST'])
@@ -243,48 +251,41 @@ def rate_question():
     if respondent_id not in respondent_ratings:
         respondent_ratings[respondent_id] = {}
     respondent_ratings[respondent_id][question_id] = rating
-    
+
     if rating < 3:
         return jsonify({'status': 'success', 'follow_up': 'Please provide more details'})
     return jsonify({'status': 'success', 'message': 'Thank you for your feedback'})
 
+
 # Endpoint to generate a reward ID and store it in the database.
-@app.route('/generate_reward_id', methods=['POST'])
+@app.route('/generate_reward_id')
 def generate_reward_id():
+    # Generate a new UUID for the reward ID
+    new_reward_id = random.randint(10000, 99999)
+
+
+    # Connect to the database
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    mycursor = mydb.cursor()
+
     try:
-        # Generate a new UUID for the reward ID
-        new_reward_id = str(uuid.uuid4())
-
-        # Connect to the database
-        mydb = mysql.connector.connect(
-            host="107.180.1.16",
-            user="summer2024team2",
-            password="summer2024team2",
-            database="summer2024team2"
-        )
         mycursor = mydb.cursor()
-
-        # Insert the new reward ID into the database
-        sql = "INSERT INTO rewards_table (rewards_table) VALUES (%s)"
-        mycursor.execute(sql, (new_reward_id,))
+        sql = "INSERT INTO rewards_table (reward_id, points) VALUES (%s, %s)"
+        val = (new_reward_id, 0)
+        mycursor.execute(sql, val)
         mydb.commit()
-
-        # Return a message with the generated reward ID
-        return jsonify({
-            'status': 'success',
-            'message': 'Your reward ID has been generated successfully.',
-            'reward_id': new_reward_id
-        })
-    except Exception as e:
-        # Handle errors and return a descriptive message
-        return jsonify({
-            'status': 'error',
-            'message': f'An error occurred: {str(e)}'
-        }), 500
-    # Close the connection
-    finally:
         mycursor.close()
-        mydb.close()
+        return jsonify({'value': new_reward_id})
+    except Exception as error:
+        mydb.rollback()  # Rollback to handle errors
+        mycursor.close()
+        flash(f"An error occurred: {error}", "error")
+        return redirect(url_for('index'))
 
 # Run the Flask application
 if __name__ == '__main__':
