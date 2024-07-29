@@ -58,20 +58,39 @@
             color: green;
             font-weight: bold;
         }
+
+        .generate-reward-link {
+            color: #007BFF; 
+            text-decoration: none; 
+            font-size: 14px; 
+            margin-top: 10px;
+            display: block;
+        }
+
+        .generate-reward-link:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+
     </style>
 </head>
 <body>
+      <div>
     {% for mesg in get_flashed_messages() %}
     <h1>{{ mesg }}</h1>
-{% endfor %}
+    {% endfor %}
     <div>
+
         <div id="surveyModal" class="modal">
             <div class="modal-content">
                 <h2>Weekly Survey</h2>
 
                 <form id="surveyForm" action="{{ url_for('submit_survey') }}" method="POST">
                     <label for="rewardID">Reward ID:</label>
-                    <input type="text" id="rewardID" name="rewardID" required>
+                    <input type="text" id="rewardID" name="rewardID" required value="">
+
+                <!-- Generate Reward ID Link -->
+                    <p><button onclick="fetchUUID()">Don't have a Reward ID? Click here to generate one</button></p>
                     
                     <label>1. Did you feel productive this week?</label><br>
                     <input type="radio" id="q1_1" name="q1" value="1">
@@ -149,6 +168,7 @@
                 </form>
             </div>
         </div>
+
         <p><a href="{{ url_for('login') }}">Login</a> to access the manager dashboard.</p>
     </div>
     
@@ -173,6 +193,20 @@
                 toggleDetails(question);
             });
         });
+
+        async function fetchUUID() {
+            try {
+                let response = await fetch('/generate_reward_id');
+                if (response.ok) {
+                    let data = await response.json();
+                    document.getElementById('rewardID').value = data.value;
+                } else {
+                    console.error('Failed to fetch UUID from backend');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 
     </script>
 </body>

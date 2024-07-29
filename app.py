@@ -1,4 +1,5 @@
 import datetime
+import random
 
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify
 from flask_wtf import FlaskForm
@@ -8,7 +9,7 @@ from flask_login import LoginManager, UserMixin, login_user, logout_user, login_
 from threading import Timer
 import webbrowser
 import mysql.connector
-
+import uuid
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
@@ -36,11 +37,10 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(user_id):
-    if user_id == 'magarvin':
+    if user_id == user_id:
         user = User()
         user.id = user_id
         return user
-    return None
 
 
 # WTForms LoginForm
@@ -70,15 +70,32 @@ def login():
     if form.validate_on_submit():
         username = form.username.data
         password = form.password.data
-        # SQL Pending
-        if username == 'magarvin' and password == 'CIS440':
-            user = User()
-            user.id = username
-            login_user(user)
-            flash('Login successful!', 'success')
-            return redirect(url_for('dashboard'))
-        else:
+
+        mydb = mysql.connector.connect(
+            host="107.180.1.16",
+            user="summer2024team2",
+            password="summer2024team2",
+            database="summer2024team2"
+        )
+
+        mycursor = mydb.cursor()
+        mycursor.execute("SELECT password FROM manager_table WHERE username = %s", (username,))
+        myresult = mycursor.fetchall()
+        mycursor.close()
+
+        try:
+            if password == myresult[0][0]:
+                user = User()
+                user.id = username
+                login_user(user)
+                flash('Login successful!', 'success')
+                return redirect(url_for('dashboard'))
+            else:
+                flash('Login unsuccessful. Please check your username and password.', 'danger')
+                return render_template('login.html', form=form)
+        except:
             flash('Login unsuccessful. Please check your username and password.', 'danger')
+            return render_template('login.html', form=form)
 
     return render_template('login.html', form=form)
 
@@ -123,6 +140,7 @@ def submit_survey():
         val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
         mycursor.execute(sql, val)
         mydb.commit()
+
         mycursor.close()
         flash("Survey Submitted!", "success")
         return redirect(url_for('index'))
@@ -131,6 +149,37 @@ def submit_survey():
         mycursor.close()
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
+
+
+@app.route('/set_num_ques')
+@login_required
+def set_num_ques():
+    return render_template('set_num_ques.html')
+
+
+@app.route('/set_num_ques_value', methods=['POST'])
+@login_required
+def set_num_ques_value():
+    num = request.form.get('numQuestions')
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    try:
+        mycursor = mydb.cursor()
+        query = "UPDATE ques_num SET value = %s WHERE public_key = 1"
+        mycursor.execute(query, (num,))
+        mydb.commit()
+        mycursor.close()
+        flash("Question Number updated!", "success")
+        return redirect(url_for('set_num_ques'))
+    except Exception as error:
+        mydb.rollback()  # Rollback to handle errors
+        mycursor.close()
+        flash(f"An error occurred: {error}", "error")
+        return redirect(url_for('set_num_ques'))
 
 
 @app.route('/create_account', methods=['POST'])
@@ -158,22 +207,16 @@ def open_browser():
     webbrowser.open_new('http://127.0.0.1:5001/')
 
 
-if __name__ == '__main__':
-    Timer(1, open_browser).start()
-    app.run(debug=False, port=5001)
-from flask import Flask, request, jsonify
-
-# Initialize Flask application
-app = Flask(__name__)
-
 # In-memory databases for simplicity
 general_questions = []  # List to store general questions
 department_questions = {}  # Dictionary to store department-specific questions
 respondent_ratings = {}  # Dictionary to store respondent ratings
 
 
-from flask import Flask, render_template, request, redirect
+from flask import Flask, render_template, request, redirect, jsonify, flash, url_for
 import mysql.connector
+import random
+from threading import Timer
 
 app = Flask(__name__)
 
@@ -211,6 +254,41 @@ def add_general_question():
 def index():
     return render_template('questions.html')
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# Endpoint to rate a question and possibly trigger a follow-up
+@app.route('/rate_question', methods=['POST'])
+def rate_question():
+    respondent_id = request.json.get('respondent_id')
+    question_id = request.json.get('question_id')
+    rating = request.json.get('rating')
 
+    if respondent_id not in respondent_ratings:
+        respondent_ratings[respondent_id] = {}
+    respondent_ratings[respondent_id][question_id] = rating
+
+    if rating < 3:
+        return jsonify({'status': 'success', 'follow_up': 'Please provide more details'})
+    return jsonify({'status': 'success', 'message': 'Thank you for your feedback'})
+
+# Endpoint to generate a reward ID and store it in the database.
+@app.route('/generate_reward_id')
+def generate_reward_id():
+    new_reward_id = random.randint(10000, 99999)
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    try:
+        sql = "INSERT INTO rewards_table (reward_id, points) VALUES (%s, %s)"
+        val = (new_reward_id, 0)
+        cursor.execute(sql, val)
+        conn.commit()
+        cursor.close()
+        return jsonify({'value': new_reward_id})
+    except Exception as error:
+        conn.rollback()  # Rollback to handle errors
+        cursor.close()
+        flash(f"An error occurred: {error}", "error")
+        return redirect(url_for('index'))
+
+if __name__ == '__main__':
+    Timer(1, open_browser).start()
+    app.run(debug=False, port=5001)
