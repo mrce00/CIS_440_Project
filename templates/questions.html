@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questions Creation Page</title>
+</head>
+<body>
+    <h1>Questions Creation Page</h1>
+    
+    <h2>Create Specific Questions for Departments</h2>
+    <form action="/add_specific_question" method="post">
+        <label for="specific_question">Question:</label>
+        <input type="text" id="specific_question" name="specific_question">
+        <button type="submit">Add Question</button>
+    </form>
+
+    <h2>Create General Questions for All Respondents</h2>
+    <form action="/add_general_question" method="post">
+        <label for="general_question">Question:</label>
+        <input type="text" id="general_question" name="general_question">
+        <button type="submit">Add Question</button>
+    </form>
+</body>
+</html>

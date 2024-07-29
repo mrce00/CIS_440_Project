@@ -171,46 +171,46 @@ general_questions = []  # List to store general questions
 department_questions = {}  # Dictionary to store department-specific questions
 respondent_ratings = {}  # Dictionary to store respondent ratings
 
-# Endpoint to add a general question
+
+from flask import Flask, render_template, request, redirect
+import mysql.connector
+
+app = Flask(__name__)
+
+# Database configuration using provided credentials
+db_config = {
+    'user': 'summer2024team2',
+    'password': 'summer2024team2',
+    'host': '107.180.1.16',
+    'database': 'summer2024team2'
+}
+
+@app.route('/add_specific_question', methods=['POST'])
+def add_specific_question():
+    question = request.form['specific_question']
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO manager_table (username) VALUES (%s)", (question,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect('/')
+
 @app.route('/add_general_question', methods=['POST'])
 def add_general_question():
-    question = request.json.get('question')
-    general_questions.append(question)
-    return jsonify({'status': 'success', 'message': 'General question added'})
+    question = request.form['general_question']
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO specific_questions (question) VALUES (%s)", (question,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect('/')
 
-# Endpoint to add a department-specific question
-@app.route('/add_department_question', methods=['POST'])
-def add_department_question():
-    department = request.json.get('department')
-    question = request.json.get('question')
-    if department not in department_questions:
-        department_questions[department] = []
-    department_questions[department].append(question)
-    return jsonify({'status': 'success', 'message': 'Department question added'})
+@app.route('/')
+def index():
+    return render_template('questions.html')
 
-# Endpoint to retrieve all questions
-@app.route('/get_questions', methods=['GET'])
-def get_questions():
-    return jsonify({
-        'general_questions': general_questions,
-        'department_questions': department_questions
-    })
-
-# Endpoint to rate a question and possibly trigger a follow-up
-@app.route('/rate_question', methods=['POST'])
-def rate_question():
-    respondent_id = request.json.get('respondent_id')
-    question_id = request.json.get('question_id')
-    rating = request.json.get('rating')
-    
-    if respondent_id not in respondent_ratings:
-        respondent_ratings[respondent_id] = {}
-    respondent_ratings[respondent_id][question_id] = rating
-    
-    if rating < 3:
-        return jsonify({'status': 'success', 'follow_up': 'Please provide more details'})
-    return jsonify({'status': 'success', 'message': 'Thank you for your feedback'})
-
-# Run the Flask application
 if __name__ == '__main__':
     app.run(debug=True)
+
