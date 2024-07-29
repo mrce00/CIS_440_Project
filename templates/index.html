@@ -87,10 +87,10 @@
 
                 <form id="surveyForm" action="{{ url_for('submit_survey') }}" method="POST">
                     <label for="rewardID">Reward ID:</label>
-                    <input type="text" id="rewardID" name="rewardID" required>
+                    <input type="text" id="rewardID" name="rewardID" required value="">
 
                 <!-- Generate Reward ID Link -->
-                <p><a href="{{ url_for('generate_reward_id') }}" class="generate-reward-link">Don't have a Reward ID? Click here to generate one</a></p>
+                    <p><button onclick="fetchUUID()">Don't have a Reward ID? Click here to generate one</button></p>
                     
                     <label>1. Did you feel productive this week?</label><br>
                     <input type="radio" id="q1_1" name="q1" value="1">
@@ -193,6 +193,20 @@
                 toggleDetails(question);
             });
         });
+
+        async function fetchUUID() {
+            try {
+                let response = await fetch('/generate_reward_id');
+                if (response.ok) {
+                    let data = await response.json();
+                    document.getElementById('rewardID').value = data.value;
+                } else {
+                    console.error('Failed to fetch UUID from backend');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
 
     </script>
 </body>
