@@ -212,14 +212,6 @@ general_questions = []  # List to store general questions
 department_questions = {}  # Dictionary to store department-specific questions
 respondent_ratings = {}  # Dictionary to store respondent ratings
 
-
-from flask import Flask, render_template, request, redirect, jsonify, flash, url_for
-import mysql.connector
-import random
-from threading import Timer
-
-app = Flask(__name__)
-
 # Database configuration using provided credentials
 db_config = {
     'user': 'summer2024team2',
@@ -229,6 +221,7 @@ db_config = {
 }
 
 @app.route('/add_specific_question', methods=['POST'])
+@login_required
 def add_specific_question():
     question = request.form['specific_question']
     conn = mysql.connector.connect(**db_config)
@@ -237,9 +230,10 @@ def add_specific_question():
     conn.commit()
     cursor.close()
     conn.close()
-    return redirect('/')
+    return redirect('/dashboard')
 
 @app.route('/add_general_question', methods=['POST'])
+@login_required
 def add_general_question():
     question = request.form['general_question']
     conn = mysql.connector.connect(**db_config)
@@ -248,10 +242,11 @@ def add_general_question():
     conn.commit()
     cursor.close()
     conn.close()
-    return redirect('/')
+    return redirect('/dashboard')
 
-@app.route('/')
-def index():
+@app.route('/questions')
+@login_required
+def questions():
     return render_template('questions.html')
 
 # Endpoint to rate a question and possibly trigger a follow-up
