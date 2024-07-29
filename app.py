@@ -212,34 +212,42 @@ general_questions = []  # List to store general questions
 department_questions = {}  # Dictionary to store department-specific questions
 respondent_ratings = {}  # Dictionary to store respondent ratings
 
+# Database configuration using provided credentials
+db_config = {
+    'user': 'summer2024team2',
+    'password': 'summer2024team2',
+    'host': '107.180.1.16',
+    'database': 'summer2024team2'
+}
 
-# Endpoint to add a general question
+@app.route('/add_specific_question', methods=['POST'])
+@login_required
+def add_specific_question():
+    question = request.form['specific_question']
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO manager_table (username) VALUES (%s)", (question,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect('/dashboard')
+
 @app.route('/add_general_question', methods=['POST'])
+@login_required
 def add_general_question():
-    question = request.json.get('question')
-    general_questions.append(question)
-    return jsonify({'status': 'success', 'message': 'General question added'})
+    question = request.form['general_question']
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute("INSERT INTO specific_questions (question) VALUES (%s)", (question,))
+    conn.commit()
+    cursor.close()
+    conn.close()
+    return redirect('/dashboard')
 
-
-# Endpoint to add a department-specific question
-@app.route('/add_department_question', methods=['POST'])
-def add_department_question():
-    department = request.json.get('department')
-    question = request.json.get('question')
-    if department not in department_questions:
-        department_questions[department] = []
-    department_questions[department].append(question)
-    return jsonify({'status': 'success', 'message': 'Department question added'})
-
-
-# Endpoint to retrieve all questions
-@app.route('/get_questions', methods=['GET'])
-def get_questions():
-    return jsonify({
-        'general_questions': general_questions,
-        'department_questions': department_questions
-    })
-
+@app.route('/questions')
+@login_required
+def questions():
+    return render_template('questions.html')
 
 # Endpoint to rate a question and possibly trigger a follow-up
 @app.route('/rate_question', methods=['POST'])
@@ -256,38 +264,26 @@ def rate_question():
         return jsonify({'status': 'success', 'follow_up': 'Please provide more details'})
     return jsonify({'status': 'success', 'message': 'Thank you for your feedback'})
 
-
 # Endpoint to generate a reward ID and store it in the database.
 @app.route('/generate_reward_id')
 def generate_reward_id():
-    # Generate a new UUID for the reward ID
     new_reward_id = random.randint(10000, 99999)
 
-
-    # Connect to the database
-    mydb = mysql.connector.connect(
-        host="107.180.1.16",
-        user="summer2024team2",
-        password="summer2024team2",
-        database="summer2024team2"
-    )
-    mycursor = mydb.cursor()
-
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
     try:
-        mycursor = mydb.cursor()
         sql = "INSERT INTO rewards_table (reward_id, points) VALUES (%s, %s)"
         val = (new_reward_id, 0)
-        mycursor.execute(sql, val)
-        mydb.commit()
-        mycursor.close()
+        cursor.execute(sql, val)
+        conn.commit()
+        cursor.close()
         return jsonify({'value': new_reward_id})
     except Exception as error:
-        mydb.rollback()  # Rollback to handle errors
-        mycursor.close()
+        conn.rollback()  # Rollback to handle errors
+        cursor.close()
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
 
-# Run the Flask application
 if __name__ == '__main__':
     Timer(1, open_browser).start()
     app.run(debug=False, port=5001)
