@@ -224,25 +224,50 @@ db_config = {
 @login_required
 def add_specific_question():
     question = request.form['specific_question']
+    department = request.form['department']
+    
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO manager_table (username) VALUES (%s)", (question,))
+    
+    # Get the next question number
+    cursor.execute("SELECT COALESCE(MAX(question_number), 0) + 1 FROM specific_questions")
+    next_question_number = cursor.fetchone()[0]
+
+    sql = "INSERT INTO specific_questions (question_number, question, department) VALUES (%s, %s, %s)"
+    val = (next_question_number, question, department)
+    
+    cursor.execute(sql, val)
     conn.commit()
+    
     cursor.close()
     conn.close()
-    return redirect('/dashboard')
+    
+    return '', 200  # Return success status
 
 @app.route('/add_general_question', methods=['POST'])
 @login_required
 def add_general_question():
     question = request.form['general_question']
+    
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
-    cursor.execute("INSERT INTO specific_questions (question) VALUES (%s)", (question,))
+    
+    # Get the next question number
+    cursor.execute("SELECT COALESCE(MAX(question_number), 0) + 1 FROM general_questions")
+    next_question_number = cursor.fetchone()[0]
+
+    sql = "INSERT INTO general_questions (question_number, question) VALUES (%s, %s)"
+    val = (next_question_number, question)
+    
+    cursor.execute(sql, val)
     conn.commit()
+    
     cursor.close()
     conn.close()
-    return redirect('/dashboard')
+    
+    return '', 200  # Return success status
+
+
 
 @app.route('/questions')
 @login_required
