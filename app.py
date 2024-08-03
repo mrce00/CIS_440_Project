@@ -309,6 +309,26 @@ def generate_reward_id():
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
 
+# Function to retrieve random questions
+def get_random_questions(num_questions):
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    query = "SELECT question_number, question FROM general_questions ORDER BY RAND() LIMIT %s"
+    cursor.execute(query, (num_questions,))
+    questions = cursor.fetchall()
+    cursor.close()
+    conn.close()
+    return questions
+
+# Route to fetch and return questions as JSON
+@app.route('/get_questions', methods=['GET'])
+@login_required
+def get_questions():
+    num_questions = 5  # Retrieve 5 questions from the table
+    random_questions = get_random_questions(num_questions)
+    return jsonify([{'question_number': q[0], 'question': q[1]} for q in random_questions])
+
+
 if __name__ == '__main__':
     Timer(1, open_browser).start()
     app.run(debug=False, port=5001)

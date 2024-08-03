@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Questions</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Questions</h1>
+    <button id="loadQuestions">Load Questions</button>
+    <ul id="questionsList"></ul>
+
+    <script>
+        $(document).ready(function() {
+            $('#loadQuestions').click(function() {
+                $.ajax({
+                    url: '/get_questions',
+                    method: 'GET',
+                    success: function(data) {
+                        $('#questionsList').empty();
+                        data.forEach(function(question) {
+                            $('#questionsList').append('<li>' + question.question_number + ': ' + question.question + '</li>');
+                        });
+                    },
+                    error: function() {
+                        alert('Error loading questions.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
