@@ -150,6 +150,35 @@ def submit_survey():
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
 
+@app.route('/set_survey_date_range', methods=['POST'])
+@login_required
+def set_survey_date_range():
+    start_date = request.form.get('startDate')
+    end_date = request.form.get('endDate')
+
+    # Connect to the database
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    try:
+        mycursor = mydb.cursor()
+        # Assuming you have a table `survey_settings` with columns `start_date` and `end_date`
+        sql = "UPDATE survey_settings SET start_date = %s, end_date = %s WHERE id = 1"
+        val = (start_date, end_date)
+        mycursor.execute(sql, val)
+        mydb.commit()
+
+        flash('Survey date range updated successfully!')
+    except Exception as e:
+        flash(f'Error: {str(e)}')
+    finally:
+        mycursor.close()
+        mydb.close()
+    
+    return redirect(url_for('dashboard'))
 
 @app.route('/set_num_ques')
 @login_required
@@ -308,6 +337,30 @@ def generate_reward_id():
         cursor.close()
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
+
+@app.route('/survey_results')
+@login_required
+def survey_results():
+    # Connect to the database
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    try:
+        mycursor = mydb.cursor(dictionary=True)  # Use dictionary=True for easier access to column names
+        mycursor.execute("SELECT * FROM responses_table")
+        surveys = mycursor.fetchall()
+    except Exception as e:
+        flash(f'Error fetching survey results: {str(e)}')
+        surveys = []
+    finally:
+        mycursor.close()
+        mydb.close()
+    
+    return render_template('survey_results.html', surveys=surveys)
+
 
 if __name__ == '__main__':
     Timer(1, open_browser).start()
