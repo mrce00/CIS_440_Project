@@ -92,79 +92,10 @@
                 <!-- Generate Reward ID Link -->
                     <p><button onclick="fetchUUID()">Don't have a Reward ID? Click here to generate one</button></p>
                     
-                    <label>1. Did you feel productive this week?</label><br>
-                    <input type="radio" id="q1_1" name="q1" value="1">
-                    <label for="q1_1">1</label>
-                    <input type="radio" id="q1_2" name="q1" value="2">
-                    <label for="q1_2">2</label>
-                    <input type="radio" id="q1_3" name="q1" value="3">
-                    <label for="q1_3">3</label>
-                    <input type="radio" id="q1_4" name="q1" value="4">
-                    <label for="q1_4">4</label>
-                    <input type="radio" id="q1_5" name="q1" value="5">
-                    <label for="q1_5">5</label>
-                    <br><br>
-
-                    <div id="q1AdditionalDetails" class="additional-details">
-                        <label for="q1Details">Please provide more details:</label><br>
-                        <textarea id="q1Details" name="q1Details" rows="4" cols="50"></textarea><br><br>
+                    <div id="questions-container">
+                        <!-- Questions will be shuffled and displayed here -->
                     </div>
-
-                    <label>2. Did you have any obstacles that affected your work?</label><br>
-                    <input type="radio" id="q2_1" name="q2" value="1">
-                    <label for="q2_1">1</label>
-                    <input type="radio" id="q2_2" name="q2" value="2">
-                    <label for="q2_2">2</label>
-                    <input type="radio" id="q2_3" name="q2" value="3">
-                    <label for="q2_3">3</label>
-                    <input type="radio" id="q2_4" name="q2" value="4">
-                    <label for="q2_4">4</label>
-                    <input type="radio" id="q2_5" name="q2" value="5">
-                    <label for="q2_5">5</label><br><br>
-
-                    <div id="q2AdditionalDetails" class="additional-details">
-                        <label for="q2Details">Please provide more details:</label><br>
-                        <textarea id="q2Details" name="q2Details" rows="4" cols="50"></textarea><br><br>
-                    </div>
-
-                    <label>3. Were you satisfied with the support you received?</label><br>
-                    <input type="radio" id="q3_1" name="q3" value="1">
-                    <label for="q3_1">1</label>
-                    <input type="radio" id="q3_2" name="q3" value="2">
-                    <label for="q3_2">2</label>
-                    <input type="radio" id="q3_3" name="q3" value="3">
-                    <label for="q3_3">3</label>
-                    <input type="radio" id="q3_4" name="q3" value="4">
-                    <label for="q3_4">4</label>
-                    <input type="radio" id="q3_5" name="q3" value="5">
-                    <label for="q3_5">5</label><br><br>
-
-                    <div id="q3AdditionalDetails" class="additional-details">
-                        <label for="q3Details">Please provide more details:</label><br>
-                        <textarea id="q3Details" name="q3Details" rows="4" cols="50"></textarea><br><br>
-                    </div>
-
-                    <label>4. Did you meet your goals for the week?</label><br>
-                    <input type="radio" id="q4_1" name="q4" value="1">
-                    <label for="q4_1">1</label>
-                    <input type="radio" id="q4_2" name="q4" value="2">
-                    <label for="q4_2">2</label>
-                    <input type="radio" id="q4_3" name="q4" value="3">
-                    <label for="q4_3">3</label>
-                    <input type="radio" id="q4_4" name="q4" value="4">
-                    <label for="q4_4">4</label>
-                    <input type="radio" id="q4_5" name="q4" value="5">
-                    <label for="q4_5">5</label><br><br>
-
-                    <div id="q4AdditionalDetails" class="additional-details">
-                        <label for="q4Details">Please provide more details:</label><br>
-                        <textarea id="q4Details" name="q4Details" rows="4" cols="50"></textarea><br><br>
-                    </div>
-
-                    <label>5. Additional Comments:</label><br>
-                    <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
-                    <button type="submit">Submit Survey</button>
-
+                    <button type="submit">Submit Survey</button>                    
                 </form>
             </div>
         </div>
@@ -207,6 +138,56 @@
                 console.error('Error:', error);
             }
         }
+
+        async function loadQuestions() {
+    try {
+        let response = await fetch('/get_questions');
+        if (response.ok) {
+            let data = await response.json();
+            const container = document.getElementById('questions-container');
+            container.innerHTML = ''; // Clear existing content
+
+            data.forEach(question => {
+                const questionNumber = question.question_number;
+                const questionText = question.question;
+                const questionElement = document.createElement('div');
+                questionElement.classList.add('question-item');
+                questionElement.innerHTML = `
+                    <label>${questionNumber}. ${questionText}</label><br>
+                    <input type="radio" id="${questionNumber}_1" name="q${questionNumber}" value="1">
+                    <label for="${questionNumber}_1">1</label>
+                    <input type="radio" id="${questionNumber}_2" name="q${questionNumber}" value="2">
+                    <label for="${questionNumber}_2">2</label>
+                    <input type="radio" id="${questionNumber}_3" name="q${questionNumber}" value="3">
+                    <label for="${questionNumber}_3">3</label>
+                    <input type="radio" id="${questionNumber}_4" name="q${questionNumber}" value="4">
+                    <label for="${questionNumber}_4">4</label>
+                    <input type="radio" id="${questionNumber}_5" name="q${questionNumber}" value="5">
+                    <label for="${questionNumber}_5">5</label><br><br>
+                    <div id="${questionNumber}AdditionalDetails" class="additional-details">
+                        <label for="q${questionNumber}Details">Please provide more details:</label><br>
+                        <textarea id="q${questionNumber}Details" name="q${questionNumber}Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
+                `;
+                container.appendChild(questionElement);
+            });
+
+            // Reinitialize the event listeners for new questions
+            document.querySelectorAll('input[type="radio"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    var question = this.name;
+                    toggleDetails(question);
+                });
+            });
+        } else {
+            console.error('Failed to fetch questions from backend');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+document.addEventListener('DOMContentLoaded', loadQuestions);
 
     </script>
 </body>
