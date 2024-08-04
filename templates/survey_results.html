@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survey Results</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f9f9f9;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        thead {
+            background-color: #007bff;
+            color: #fff;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+        th {
+            font-weight: bold;
+        }
+        tbody tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tbody tr:hover {
+            background-color: #ddd;
+        }
+        a {
+            text-decoration: none;
+            color: #007bff;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<h1>Survey Results</h1>
+<p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+
+<table>
+    <thead>
+    <tr>
+        <th>Username</th>
+        <th>Productive</th>
+        <th>Workload</th>
+        <th>Resources</th>
+        <th>Obstacles</th>
+        <th>Comments</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for survey in surveys %}
+    <tr>
+        <td>{{ survey.username }}</td>
+        <td>{{ survey.q1 }}</td>
+        <td>{{ survey.q2 }}</td>
+        <td>{{ survey.q3 }}</td>
+        <td>{{ survey.q4 }}</td>
+        <td>{{ survey.comments }}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+</body>
+</html>

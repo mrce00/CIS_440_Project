@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        table, th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .center {
+            text-align: center;
+        }
+        .form-container, .survey-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        /* Style for the modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        /* Flash message styles */
+        .flash-messages {
+            margin: 20px 0;
+        }
+        .flash {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+        .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+        /* Button styles */
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 10px 0;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+        .btn2 {
+            display: inline-block;
+            padding: 5px 10px;
+            margin: 5px 0;
+            font-size: 12px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #0b1b2b;
+            border: none;
+            border-radius: 2px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="flash-messages">
+    {% for category, message in messages %}
+    <div class="flash {{ category }}">{{ message }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<h1>Welcome to the Dashboard</h1>
+<p>Hello, {{ current_user.id }}!</p>
+<p>This is your dashboard content.</p>
+<p><a href="{{ url_for('logout') }}">Logout</a></p>
+
+<a href="#createAccountModal" class="btn" id="createAccountBtn">Create Account</a>
+
+<!-- Create Account Form in a Popup -->
+<div id="createAccountModal" class="modal">
+    <div class="modal-content">
+        <span class="close" id="closeCreateAccountModal">&times;</span>
+        <h2>Create New Account</h2>
+        <form id="createAccountForm">
+            <label for="username">Username:</label><br>
+            <input type="text" id="username" name="username" required><br><br>
+            <label for="email">Email:</label><br>
+            <input type="email" id="email" name="email" required><br><br>
+            <label for="password">Password:</label><br>
+            <input type="password" id="password" name="password" required><br><br>
+            <label for="role">Role:</label><br>
+            <select id="role" name="role">
+                <option value="user">User</option>
+                <option value="manager">Manager</option>
+            </select><br><br>
+            <button type="submit">Create Account</button>
+            <button type="button" id="closeCreateAccountBtn">Cancel</button>
+        </form>
+    </div>
+</div>
+
+<h2>Set Survey Date Range</h2>
+<form action="{{ url_for('set_survey_date_range') }}" method="POST">
+    <label for="startDate">Start Date:</label>
+    <input type="date" id="startDate" name="startDate" required>
+    <label for="endDate">End Date:</label>
+    <input type="date" id="endDate" name="endDate" required>
+    <button type="submit" class="btn2">Set Survey Date Range</button>
+</form>
+
+
+<!-- Set Survey Date Range Hyperlinked Button -->
+<!-- <a href="{{ url_for('set_survey_date_range') }}" class="btn">Set Survey Date Range</a> -->
+
+<!-- Create Questions Link -->
+<a href="{{ url_for('questions') }}" class="btn">Create Questions</a>
+
+<!-- Set Num of Questions Link -->
+<p><a href="{{ url_for('set_num_ques') }}" class="btn">Set number of questions presented</a></p>
+
+<!-- Add this link somewhere appropriate in your dashboard.html -->
+<p><a href="{{ url_for('survey_results') }}" class="btn">View Survey Results</a></p>
+
+
+<h2>Accounts</h2>
+<table>
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Username</th>
+        <th>Email</th>
+        <th>Role</th> <!-- New column for Role -->
+        <th>Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    {% for account in accounts %}
+    <tr>
+        <td>{{ account.id }}</td>
+        <td>{{ account.username }}</td>
+        <td>{{ account.email }}</td>
+        <td>{{ account.role }}</td> <!-- Display Role value -->
+        <td class="center">
+            <a href="{{ url_for('edit_account', account_id=account.id) }}">Edit</a> |
+            <a href="{{ url_for('delete_account', account_id=account.id) }}">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+    </tbody>
+</table>
+<!--
+    Survey Results Tab (for management)
+    <h2>Survey Results</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Productive</th>
+                <th>Obstacles</th>
+                <th>Support</th>
+                <th>Goals Met</th>
+                <th>Comments</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for survey in surveys %}
+            <tr>
+                <td>{{ survey.id }}</td>
+                <td>{{ survey.q1 }}</td>
+                <td>{{ survey.q2 }}</td>
+                <td>{{ survey.q3 }}</td>
+                <td>{{ survey.q4 }}</td>
+                <td>{{ survey.comments }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table> -->
+
+
+<!-- JavaScript for handling modals and form submission -->
+<script>
+    // Open Create Account Modal
+    document.getElementById('createAccountBtn').addEventListener('click', function() {
+        document.getElementById('createAccountModal').style.display = 'block';
+    });
+
+    // Close Create Account Modal
+    document.getElementById('closeCreateAccountBtn').addEventListener('click', function() {
+        document.getElementById('createAccountModal').style.display = 'none';
+    });
+
+    // Close Create Account Modal (click on <span>)
+    document.getElementById('closeCreateAccountModal').addEventListener('click', function() {
+        document.getElementById('createAccountModal').style.display = 'none';
+    });
+</script>
+</body>
+</html>
+

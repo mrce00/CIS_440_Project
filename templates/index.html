@@ -27,7 +27,7 @@
         label, p {
             margin: 10px 0;
         }
-        input[type="text"], input[type="submit"], button, select, textarea {
+        input[type="text"], input[type="number"], textarea, input[type="submit"], button, select {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
@@ -56,11 +56,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('rewardIDForm').addEventListener('submit', function (event) {
                 event.preventDefault();
-                const rewardID = document.getElementById('rewardID').value;
-                if (!rewardID) {
-                    document.getElementById('message').textContent = 'Please enter a valid Reward ID.';
-                    return;
-                }
                 document.getElementById('rewardIDForm').style.display = 'none';
                 document.getElementById('surveySection').style.display = 'block';
                 document.getElementById('message').textContent = 'Reward ID submitted. Please complete the survey.';
@@ -111,7 +106,7 @@
         <!-- Survey Section -->
         <div id="surveySection" style="display:none;">
             <form id="surveyForm">
-                <label for="question1">How satisfied are you with our service?</label>
+                <label for="question1">Question 1: How satisfied are you with our service?</label>
                 <select id="question1" name="question1" required>
                     <option value="1">Very Unsatisfied</option>
                     <option value="2">Unsatisfied</option>
