@@ -27,12 +27,15 @@
         label, p {
             margin: 10px 0;
         }
-        input[type="text"], input[type="submit"], button {
+        input[type="text"], input[type="submit"], button, select, textarea {
             width: 100%;
             padding: 10px;
             margin: 10px 0;
             border: 1px solid #ccc;
             border-radius: 4px;
+        }
+        textarea {
+            height: 100px;
         }
         button {
             background-color: #4CAF50;
@@ -50,17 +53,48 @@
         }
     </style>
     <script>
-        function handleRewardIDSubmit(event) {
-            event.preventDefault(); // Prevent default form submission
-            document.getElementById('rewardIDForm').style.display = 'none';
-            document.getElementById('surveySection').style.display = 'block';
-            document.getElementById('message').textContent = 'Reward ID submitted. Please complete the survey.';
-        }
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('rewardIDForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+                const rewardID = document.getElementById('rewardID').value;
+                if (!rewardID) {
+                    document.getElementById('message').textContent = 'Please enter a valid Reward ID.';
+                    return;
+                }
+                document.getElementById('rewardIDForm').style.display = 'none';
+                document.getElementById('surveySection').style.display = 'block';
+                document.getElementById('message').textContent = 'Reward ID submitted. Please complete the survey.';
+            });
 
-        function handleSurveySubmit(event) {
-            event.preventDefault(); // Prevent default form submission
-            document.getElementById('message').textContent = 'Survey submitted. Thank you for your participation!';
-        }
+            document.getElementById('surveyForm').addEventListener('submit', function (event) {
+                event.preventDefault();
+
+                const formData = new FormData(event.target);
+                const question1 = formData.get('question1');
+                const writeIn1 = formData.get('writeIn1');
+
+                const POINTS_PER_QUESTION = 10;
+                const EXTRA_POINTS_WRITE_IN = 5;
+
+                let points = POINTS_PER_QUESTION;
+                if (writeIn1 && writeIn1.trim() !== '') {
+                    points += EXTRA_POINTS_WRITE_IN;
+                }
+
+                document.getElementById('message').textContent = `Survey submitted. You earned ${points} points!`;
+
+                // For demonstration purposes, log the data to the console
+                console.log({
+                    rewardID: document.getElementById('rewardID').value,
+                    question1,
+                    writeIn1,
+                    points
+                });
+
+                // Optionally reset the form
+                event.target.reset();
+            });
+        });
     </script>
 </head>
 <body>
@@ -68,7 +102,7 @@
         <h1>Survey</h1>
 
         <!-- Reward ID Submission -->
-        <form id="rewardIDForm" onsubmit="handleRewardIDSubmit(event)">
+        <form id="rewardIDForm">
             <label for="rewardID">Reward ID:</label>
             <input type="text" id="rewardID" name="rewardID" required>
             <input type="submit" value="Submit Reward ID">
@@ -76,10 +110,25 @@
 
         <!-- Survey Section -->
         <div id="surveySection" style="display:none;">
-            <button onclick="handleSurveySubmit(event)">Submit Survey</button>
+            <form id="surveyForm">
+                <label for="question1">How satisfied are you with our service?</label>
+                <select id="question1" name="question1" required>
+                    <option value="1">Very Unsatisfied</option>
+                    <option value="2">Unsatisfied</option>
+                    <option value="3">Neutral</option>
+                    <option value="4">Satisfied</option>
+                    <option value="5">Very Satisfied</option>
+                </select>
+
+                <label for="writeIn1">Write-in Answer (Optional):</label>
+                <textarea id="writeIn1" name="writeIn1"></textarea>
+
+                <button type="submit">Submit Survey</button>
+            </form>
         </div>
 
         <p id="message" class="message"></p>
     </div>
 </body>
 </html>
+
