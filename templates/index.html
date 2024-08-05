@@ -92,7 +92,18 @@
                 <!-- Generate Reward ID Link -->
                     <p><button onclick="fetchUUID()">Don't have a Reward ID? Click here to generate one</button></p>
                     
-                    <label>1. Did you feel productive this week?</label><br>
+                    <label for="department">Department:</label>
+                    <select id="department" name="department">
+                        <option value="">Select a department</option>
+                        <option value="IT">IT</option>
+                        <option value="R&D">R&D</option>
+                        <option value="HR">HR</option>
+                        <option value="Sales">Sales</option>
+                        <!--Add more here if desired-->
+                    </select>
+                    <button id='departmentButton'>Get Questions</button>
+                    <div id="question-container"></div>
+                    <!--<label>1. Did you feel productive this week?</label><br>
                     <input type="radio" id="q1_1" name="q1" value="1">
                     <label for="q1_1">1</label>
                     <input type="radio" id="q1_2" name="q1" value="2">
@@ -103,14 +114,14 @@
                     <label for="q1_4">4</label>
                     <input type="radio" id="q1_5" name="q1" value="5">
                     <label for="q1_5">5</label>
-                    <br><br>
+                    <br><br>-->
 
-                    <div id="q1AdditionalDetails" class="additional-details">
+                    <!--<div id="q1AdditionalDetails" class="additional-details">
                         <label for="q1Details">Please provide more details:</label><br>
                         <textarea id="q1Details" name="q1Details" rows="4" cols="50"></textarea><br><br>
-                    </div>
+                    </div>-->
 
-                    <label>2. Did you have any obstacles that affected your work?</label><br>
+                    <!--<label>2. Did you have any obstacles that affected your work?</label><br>
                     <input type="radio" id="q2_1" name="q2" value="1">
                     <label for="q2_1">1</label>
                     <input type="radio" id="q2_2" name="q2" value="2">
@@ -120,14 +131,14 @@
                     <input type="radio" id="q2_4" name="q2" value="4">
                     <label for="q2_4">4</label>
                     <input type="radio" id="q2_5" name="q2" value="5">
-                    <label for="q2_5">5</label><br><br>
+                    <label for="q2_5">5</label><br><br>-->
 
-                    <div id="q2AdditionalDetails" class="additional-details">
+                    <!--<div id="q2AdditionalDetails" class="additional-details">
                         <label for="q2Details">Please provide more details:</label><br>
                         <textarea id="q2Details" name="q2Details" rows="4" cols="50"></textarea><br><br>
-                    </div>
+                    </div>-->
 
-                    <label>3. Were you satisfied with the support you received?</label><br>
+                    <!--<label>3. Were you satisfied with the support you received?</label><br>
                     <input type="radio" id="q3_1" name="q3" value="1">
                     <label for="q3_1">1</label>
                     <input type="radio" id="q3_2" name="q3" value="2">
@@ -154,12 +165,12 @@
                     <input type="radio" id="q4_4" name="q4" value="4">
                     <label for="q4_4">4</label>
                     <input type="radio" id="q4_5" name="q4" value="5">
-                    <label for="q4_5">5</label><br><br>
+                    <label for="q4_5">5</label><br><br>-->
 
-                    <div id="q4AdditionalDetails" class="additional-details">
+                    <!--<div id="q4AdditionalDetails" class="additional-details">
                         <label for="q4Details">Please provide more details:</label><br>
                         <textarea id="q4Details" name="q4Details" rows="4" cols="50"></textarea><br><br>
-                    </div>
+                    </div>-->
 
                     <label>5. Additional Comments:</label><br>
                     <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
@@ -173,6 +184,110 @@
     </div>
     
     <script>
+
+        // Get department button
+        const departmentButton = document.getElementById('departmentButton');
+
+        function fetchQuestions(department) {
+            // Fetch the questions from the database
+            fetch('/get_questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ department: department }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the form with the questions
+                    const generalQuestions = data.general_questions;
+                    const specificQuestions = data.specific_questions;
+                    // Create HTML elements for the questions
+                    const questionElements = [];
+                    let questionIndex = 1;
+
+                    generalQuestions.forEach((question) => {
+                        const questionElement = document.createElement('div');
+                        questionElement.innerHTML = `
+                <label>${questionIndex}. ${question}</label>
+                <input type="radio" name="q${questionIndex}" value="1">
+                <label for="q${questionIndex}_1">1</label>
+                <input type="radio" name="q${questionIndex}" value="2">
+                <label for="q${questionIndex}_2">2</label>
+                <input type="radio" name="q${questionIndex}" value="3">
+                <label for="q${questionIndex}_3">3</label>
+                <input type="radio" name="q${questionIndex}" value="4">
+                <label for="q${questionIndex}_4">4</label>
+                <input type="radio" name="q${questionIndex}" value="5">
+                <label for="q${questionIndex}_5">5</label>
+                <br><br>
+                <div id="q${questionIndex}AdditionalDetails" class="additional-details" style="display: none;">
+                    <label for="q${questionIndex}Details">Please provide more details:</label><br>
+                    <textarea id="q${questionIndex}Details" name="q${questionIndex}Details" rows="4" cols="50"></textarea><br><br>
+                </div>
+            `;
+                        questionElements.push(questionElement);
+
+                        questionElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+                            radio.addEventListener('change', function () {
+                                var question = this.name;
+                                toggleDetails(question);
+                            });
+                        });
+
+                        questionIndex++;
+                    });
+
+                    specificQuestions.forEach((question) => {
+                        const questionElement = document.createElement('div');
+                        questionElement.innerHTML = `
+                <label>${questionIndex}. ${question}</label>
+                <input type="radio" name="q${questionIndex}" value="1">
+                <label for="q${questionIndex}_1">1</label>
+                <input type="radio" name="q${questionIndex}" value="2">
+                <label for="q${questionIndex}_2">2</label>
+                <input type="radio" name="q${questionIndex}" value="3">
+                <label for="q${questionIndex}_3">3</label>
+                <input type="radio" name="q${questionIndex}" value="4">
+                <label for="q${questionIndex}_4">4</label>
+                <input type="radio" name="q${questionIndex}" value="5">
+                <label for="q${questionIndex}_5">5</label>
+                <br><br>
+                <div id="q${questionIndex}AdditionalDetails" class="additional-details" style="display: none;">
+                    <label for="q${questionIndex}Details">Please provide more details:</label><br>
+                    <textarea id="q${questionIndex}Details" name="q${questionIndex}Details" rows="4" cols="50"></textarea><br><br>
+                </div>
+            `;
+                        questionElements.push(questionElement);
+                        questionElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+                            radio.addEventListener('change', function () {
+                                var question = this.name;
+                                toggleDetails(question);
+                            });
+                        });
+
+                        questionIndex++;
+                    });
+
+                    // Add the question elements to the form
+                    const questionContainer = document.getElementById('question-container');
+                    questionContainer.innerHTML = '';
+                    questionElements.forEach((questionElement) => {
+                        questionContainer.appendChild(questionElement);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error fetching questions:', error);
+                });
+        }
+
+        // Add an event listener to the department button
+        departmentButton.addEventListener('click', () => {
+            // Get the department value
+            const department = document.getElementById('department').value;
+
+            // Call fetchQuestions
+            fetchQuestions(department);
+        });
+
         function handleSurveySubmit(event) {
             event.preventDefault(); // Prevent default form submission
         }
@@ -187,12 +302,12 @@
             }
         }
 
-        document.querySelectorAll('input[type="radio"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                var question = this.name;
-                toggleDetails(question);
-            });
-        });
+        //document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        //    radio.addEventListener('change', function() {
+        //        var question = this.name;
+        //        toggleDetails(question);
+        //    });
+        //});
 
         async function fetchUUID() {
             try {
