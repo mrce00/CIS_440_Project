@@ -10,6 +10,8 @@ from threading import Timer
 import webbrowser
 import mysql.connector
 import uuid
+import csv
+import os
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
@@ -28,6 +30,51 @@ accounts = [
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+# Defining default values
+default_data = {
+    'write_in': 3,
+    'specific_question': 2,
+    'general_question': 3
+}
+
+# Check if the file exists, if not create it with default values
+
+if not os.path.exists('question_points.csv'):
+    with open('question_points.csv', 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['question_type', 'point_value'])
+        for question, points in default_data.items():
+            writer.writerow([question, points])
+
+# Read the CSV file
+question_points = {}
+with open('question_points.csv', 'r') as csvfile:
+    reader = csv.reader(csvfile)
+    next(reader)
+    for row in reader:
+        question_points[row[0]] = int(row[1])
+        
+@app.route('/question_values', methods=['GET', 'POST'])
+def question_values():
+    if request.method == 'POST':
+        question_points['write_in'] = int(request.form['write_in_points'])
+        question_points['specific_question'] = int(request.form['specific_question_points'])
+        question_points['general_question'] = int(request.form['general_question_points'])
+
+        # Update the CSV file
+        with open('question_points.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['question_type', 'point_value'])
+            for question, points in question_points.items():
+                writer.writerow([question, points])
+        flash('Points updated successfully!')
+        return redirect(url_for('index'))
+    else:
+        return render_template('question_values.html', 
+                               write_in_points=question_points['write_in'],
+                               specific_question_points=question_points['specific_question'],
+                               general_question_points=question_points['general_question'])
 
 
 # User class
