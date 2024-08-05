@@ -12,6 +12,7 @@ import mysql.connector
 import uuid
 import csv
 import os
+import logging
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
@@ -408,6 +409,76 @@ def survey_results():
 
     return render_template('survey_results.html', surveys=surveys)
 
+
+# Set up logging
+logging.basicConfig(filename='shuffle_data.log', level=logging.INFO)
+
+def shuffle_data():
+    try:
+        # Connect to the database
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        
+        # Shuffle general_questions table
+        query = f"SELECT * FROM general_questions"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        try:
+            random.shuffle(rows)
+        except Exception as e:
+            logging.error(f"Error shuffling general questions: {e}")
+            return f"Error shuffling general questions: {e}"
+        query = f"DELETE FROM general_questions"
+        cursor.execute(query)
+        query = f"INSERT INTO general_questions (question_number, question) VALUES (%s, %s)"
+        for row in rows:
+            cursor.execute(query, row)
+            
+        # Shuffle specific_questions table
+        query = f"SELECT question_number, question, department FROM specific_questions"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        try:
+            random.shuffle(rows)
+        except Exception as e:
+            logging.error(f"Error shuffling specific questions: {e}")
+            return f"Error shuffling specific questions: {e}"
+        query = f"DELETE FROM specific_questions"
+        cursor.execute(query)
+        query = f"INSERT INTO specific_questions (question_number, question, department) VALUES (%s, %s, %s)"
+        for row in rows:
+            cursor.execute(query, row)
+        
+        # Commit the changes
+        try:
+            conn.commit()
+        except mysql.connector.Error as err:
+            logging.error(f"Error committing changes: {err}")
+            return f"Error committing changes: {err}"
+        
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
+        logging.info("Data shuffled successfully!")
+        return "Data shuffled successfully!"
+
+    except mysql.connector.Error as err:
+        logging.error(f"Error shuffling data: {err}")
+        return f"Error shuffling data: {err}"
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        return f"An error occurred: {e}"
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
+  
+@app.route('/shuffle_data', methods=['POST'])
+def shuffle_data_route():
+    result = shuffle_data()
+    return jsonify({"message": result})
 
 # Define a function to get questions from the database
 def get_questions(department):
