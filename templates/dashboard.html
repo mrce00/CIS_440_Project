@@ -270,23 +270,19 @@
         document.getElementById("shuffle-button").innerHTML = "Shuffling...";
 
 
-        // Make an AJAX request to execute the shuffle_data function
-        $.ajax({
-            type: "POST",
-            url: "/shuffle_data",
-            success: function (response) {
-                if (response.message === "Data shuffled successfully!") {
-                    document.getElementById("shuffle-button").innerHTML = "Shuffled!";
-                } else {
-                    document.getElementById("shuffle-button").innerHTML = "Error!";
-                    console.error(response.message);
-                }
-            },
-            error: function (xhr, status, error) {
-                document.getElementById("shuffle-button").innerHTML = "Error!";
-                console.error(xhr.responseText);
-            }
+        // Make a POST request to the /shuffle_data endpoint
+        $.post("/shuffle_data", function () {
+            // Re-enable the button and change its text when the request is complete
+            document.getElementById("shuffle-button").innerHTML = "Shuffle";
+            // Refresh the page after the request is complete
+        }).fail(function () {
+            // Handle the case where the request fails
+            flash('Unable to shuffle questions. Please try again')
+            document.getElementById("shuffle-button").disabled = false;
+            document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
+
         });
+
     }
 </script>
 </body>
