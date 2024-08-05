@@ -273,7 +273,7 @@
         // Make an AJAX request to execute the shuffle_data function
         $.ajax({
             type: "POST",
-            url: "/shuffle_data", // Replace with the URL of your Flask route
+            url: "/shuffle_data",
             success: function (response) {
                 if (response.message === "Data shuffled successfully!") {
                     document.getElementById("shuffle-button").innerHTML = "Shuffled!";
