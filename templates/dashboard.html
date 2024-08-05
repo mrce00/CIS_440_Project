@@ -264,25 +264,21 @@
         document.getElementById('createAccountModal').style.display = 'none';
     });
 
-    function shuffleQuestions() {
+    async function shuffleQuestions() {
         // Disable the button to prevent multiple clicks
         document.getElementById("shuffle-button").disabled = true;
         document.getElementById("shuffle-button").innerHTML = "Shuffling...";
-
-
-        // Make a POST request to the /shuffle_data endpoint
-        $.post("/shuffle_data", function () {
+        try {
+            // Make a POST request to the /shuffle_data endpoint
+            await $.post("/shuffle_data");
             // Re-enable the button and change its text when the request is complete
-            document.getElementById("shuffle-button").innerHTML = "Shuffle";
-            // Refresh the page after the request is complete
-        }).fail(function () {
+            document.getElementById("shuffle-button").innerHTML = "Questions Shuffled!";
+        } catch (error) {
             // Handle the case where the request fails
             flash('Unable to shuffle questions. Please try again')
             document.getElementById("shuffle-button").disabled = false;
             document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
-
-        });
-
+        }
     }
 </script>
 </body>

@@ -477,8 +477,12 @@ def shuffle_data():
   
 @app.route('/shuffle_data', methods=['POST'])
 def shuffle_data_route():
-    shuffle_data()
-    return 'Data shuffled successfully!'
+    try:
+        result = shuffle_data()
+        return result
+    except Exception as e:
+        logging.error(f"Error shuffling data: {e}")
+        return f"Erro shuffling data: {e}", 500
 
 # Define a function to get questions from the database
 def get_questions(department):
@@ -504,4 +508,4 @@ def get_questions_route():
 
 if __name__ == '__main__':
     Timer(1, open_browser).start()
-    app.run(debug=True, port=5001)
+    app.run(debug=False, port=5001)
