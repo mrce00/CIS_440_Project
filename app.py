@@ -410,66 +410,100 @@ def survey_results():
     return render_template('survey_results.html', surveys=surveys)
 
 
-# Set up logging
-logging.basicConfig(filename='shuffle_data.log', level=logging.INFO)
+# def shuffle_data():
+#     try:
+#         # Connect to the database with a timeout
+#         conn = mysql.connector.connect(**db_config, connect_timeout=10)
+#         cursor = conn.cursor()
+    
+#         # Shuffle general_questions table
+#         query = f"SELECT * FROM general_questions ORDER BY RAND()"
+#         cursor.execute(query)
+#         rows = cursor.fetchall()
+#         query = f"DELETE FROM general_questions"
+#         cursor.execute(query)
+#         query = f"INSERT INTO general_questions (question_number, question) VALUES (%s, %s)"
+#         for row in rows:
+#             cursor.execute(query, row)
+            
+#         # Shuffle specific_questions table
+#         query = f"SELECT question_number, question, department FROM specific_questions ORDER BY RAND()"
+#         cursor.execute(query)
+#         rows = cursor.fetchall()
+#         query = f"DELETE FROM specific_questions"
+#         cursor.execute(query)
+#         query = f"INSERT INTO specific_questions (question_number, question, department) VALUES (%s, %s, %s)"
+#         for row in rows:
+#             cursor.execute(query, row)
+#         # Commit the changes
+#         try:
+#             conn.commit()
+#         except mysql.connector.Error as err:
+#             print(f"Error committing changes: {err}")
+#             return f"Error committing changes: {err}"
+#         # Close the cursor and connection
+#         try:
+#             cursor.close()
+#         except Exception as e:
+#             print(f"Error closing cursor: {e}")
+#         try:
+#             conn.close()
+#         except Exception as e:
+#             print(f"Error closing connection: {e}")
+#         print("Data shuffled successfully!")
+#         return "Data shuffled successfully!"
+#     except mysql.connector.Error as err:
+#         print(f"Error shuffling data: {err}")
+#         return f"Error shuffling data: {err}"
+#     except Exception as e:
+#         print(f"An error occurred: {e}")
+#         return f"An error occurred: {e}"
 
 def shuffle_data():
     try:
         # Connect to the database with a timeout
-        conn = mysql.connector.connect(**db_config, connect_timeout=10)
-        cursor = conn.cursor()
-    
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor() 
+        # Shuffle specific_questions table
+        query = f"SELECT * FROM specific_questions ORDER BY RAND()"
+        cursor.execute(query)
+        rows = cursor.fetchall()
+        # Delete existing data
+        query = "DELETE FROM specific_questions"
+        cursor.execute(query)
+        # Insert shuffled data
+        query = "INSERT INTO specific_questions (question_number, question, department) VALUES (%s, %s, %s)"
+        for row in rows:
+            cursor.execute(query, row) 
+        # Commit the changes
+        conn.commit()
         # Shuffle general_questions table
         query = f"SELECT * FROM general_questions ORDER BY RAND()"
         cursor.execute(query)
         rows = cursor.fetchall()
-        query = f"DELETE FROM general_questions"
+        # Delete existing data
+        query = "DELETE FROM general_questions"
         cursor.execute(query)
-        query = f"INSERT INTO general_questions (question_number, question) VALUES (%s, %s)"
+        # Insert shuffled data
+        query = "INSERT INTO general_questions (question_number, question) VALUES (%s, %s)"
         for row in rows:
-            cursor.execute(query, row)
-            
-        # Shuffle specific_questions table
-        query = f"SELECT question_number, question, department FROM specific_questions ORDER BY RAND()"
-        cursor.execute(query)
-        rows = cursor.fetchall()
-        query = f"DELETE FROM specific_questions"
-        cursor.execute(query)
-        query = f"INSERT INTO specific_questions (question_number, question, department) VALUES (%s, %s, %s)"
-        for row in rows:
-            cursor.execute(query, row)
+            cursor.execute(query, row)   
         # Commit the changes
-        try:
-            conn.commit()
-        except mysql.connector.Error as err:
-            logging.error(f"Error committing changes: {err}")
-            return f"Error committing changes: {err}"
-        # Close the cursor and connection
-        try:
-            cursor.close()
-        except Exception as e:
-            logging.error(f"Error closing cursor: {e}")
-        try:
-            conn.close()
-        except Exception as e:
-            logging.error(f"Error closing connection: {e}")
-        logging.info("Data shuffled successfully!")
-        return "Data shuffled successfully!"
+        conn.commit()
+        print("Data shuffled successfully!")
     except mysql.connector.Error as err:
-        logging.error(f"Error shuffling data: {err}")
-        return f"Error shuffling data: {err}"
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-        return f"An error occurred: {e}"
+        # Roll back the changes if an error occurs
+        conn.rollback()
+        print(f"Error: {err}")
+    finally:
+        # Close the cursor and connection
+        cursor.close()
+        conn.close()
   
 @app.route('/shuffle_data', methods=['POST'])
 def shuffle_data_route():
-    try:
-        result = shuffle_data()
-        return result
-    except Exception as e:
-        logging.error(f"Error shuffling data: {e}")
-        return f"Erro shuffling data: {e}", 500
+    shuffle_data()
+    return 'Data shuffled successfully!', 200
 
 # Define a function to get questions from the database
 def get_questions(department):
