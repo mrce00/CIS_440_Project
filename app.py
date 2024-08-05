@@ -69,9 +69,9 @@ def question_points_view():
             for question, points in question_points.items():
                 writer.writerow([question, points])
         flash('Points updated successfully!')
-        return redirect(url_for('question_points_view'))
+        return redirect(url_for('question_values'))
     else:
-        return render_template('question_points.html', 
+        return render_template('question_values.html', 
                                write_in_points=question_points['write_in'],
                                specific_question_points=question_points['specific_question'],
                                general_question_points=question_points['general_question'])
