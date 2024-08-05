@@ -362,6 +362,28 @@ def survey_results():
     return render_template('survey_results.html', surveys=surveys)
 
 
+# Define a function to get questions from the database
+def get_questions(department):
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    cursor.execute('SELECT question FROM specific_questions WHERE department = %s', (department,))
+    specific_questions = cursor.fetchall()
+    cursor.execute('SELECT question from general_questions')
+    general_questions = cursor.fetchall()
+    conn.close()
+    questions_to_return = {'general_questions': general_questions[:2],
+                           'specific_questions': specific_questions[:2]}
+    return questions_to_return
+
+
+# Define a route to get questions for a specific department
+@app.route('/get_questions', methods=['POST'])
+def get_questions_route():
+    data = request.get_json()
+    department = data['department']
+    questions = get_questions(department)
+    return jsonify(questions)
+
 if __name__ == '__main__':
     Timer(1, open_browser).start()
     app.run(debug=False, port=5001)
