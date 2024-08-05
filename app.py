@@ -55,8 +55,8 @@ with open('question_points.csv', 'r') as csvfile:
     for row in reader:
         question_points[row[0]] = int(row[1])
         
-@app.route('/question_points', methods=['GET', 'POST'])
-def question_points_view():
+@app.route('/question_values', methods=['GET', 'POST'])
+def question_values():
     if request.method == 'POST':
         question_points['write_in'] = int(request.form['write_in_points'])
         question_points['specific_question'] = int(request.form['specific_question_points'])
@@ -69,7 +69,7 @@ def question_points_view():
             for question, points in question_points.items():
                 writer.writerow([question, points])
         flash('Points updated successfully!')
-        return redirect(url_for('question_values'))
+        return redirect(url_for('index'))
     else:
         return render_template('question_values.html', 
                                write_in_points=question_points['write_in'],
