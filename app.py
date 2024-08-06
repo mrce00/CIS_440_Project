@@ -237,7 +237,9 @@ def set_num_ques():
 @app.route('/set_num_ques_value', methods=['POST'])
 @login_required
 def set_num_ques_value():
-    num = request.form.get('numQuestions')
+    num_general = request.form.get('numGeneralQuestions')
+    num_specific = request.form.get('numSpecificQuestions')
+    
     mydb = mysql.connector.connect(
         host="107.180.1.16",
         user="summer2024team2",
@@ -246,8 +248,13 @@ def set_num_ques_value():
     )
     try:
         mycursor = mydb.cursor()
+        
         query = "UPDATE ques_num SET value = %s WHERE public_key = 1"
-        mycursor.execute(query, (num,))
+        mycursor.execute(query, (num_general,))
+        
+        query = "UPDATE ques_num SET value = %s WHERE public_key = 2"
+        mycursor.execute(query, (num_specific,))
+
         mydb.commit()
         mycursor.close()
         flash("Question Number updated!", "success")
