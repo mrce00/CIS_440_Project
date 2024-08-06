@@ -409,38 +409,6 @@ def survey_results():
 
     return render_template('survey_results.html', surveys=surveys)
 
-
-# def shuffle_table(conn, cursor, table_name, columns):
-#     try:
-#         print(f"Shuffling {table_name} table")
-#         # Retrieve rows from the table in a random order
-#         query = f"SELECT * FROM {table_name} ORDER BY RAND()"
-#         cursor.execute(query)
-#         rows = list(cursor.fetchall())
-#         if not rows:
-#             print(f"No data in {table_name} table")
-#             return False
-        
-#         # Delete existing data in the table
-#         query = f"DELETE FROM {table_name}"
-#         cursor.execute(query)
-        
-#         # Re-insert the rows in the random order
-#         query = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({', '.join(['%s'] * len(columns))})"
-#         for row in rows:
-#             cursor.execute(query, row)
-        
-#         # Commit the changes
-#         conn.commit()
-#         print(f"Changes committed for {table_name} table")
-        
-#         return True
-#     except mysql.connector.Error as err:
-#         # Roll back the changes if an error occurs
-#         print(f"Error: {err}")
-#         conn.rollback()
-#         return False
-
 def shuffle_table(conn, cursor, table_name, columns):
     try:
         print(f"Shuffling {table_name} table")
@@ -551,13 +519,22 @@ def shuffle_data_route():
 def get_questions(department):
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
+    
+    # Fetch the number of questions to display from the ques_num table
+    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('general',))
+    general_num_questions = cursor.fetchone()[0]
+    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('specific',))
+    specific_num_questions = cursor.fetchone()[0]
+    
+    # Fetch the questions from the specific and general questions tables
     cursor.execute('SELECT question FROM specific_questions WHERE department = %s', (department,))
-    specific_questions = cursor.fetchall()
+    specific_questions = cursor.fetchall()[:specific_num_questions]
     cursor.execute('SELECT question from general_questions')
-    general_questions = cursor.fetchall()
+    general_questions = cursor.fetchall()[:general_num_questions]
+    
     conn.close()
-    questions_to_return = {'general_questions': general_questions[:2],
-                           'specific_questions': specific_questions[:2]}
+    questions_to_return = {'general_questions': general_questions,
+                           'specific_questions': specific_questions}
     return questions_to_return
 
 
