@@ -410,66 +410,142 @@ def survey_results():
     return render_template('survey_results.html', surveys=surveys)
 
 
-# Set up logging
-logging.basicConfig(filename='shuffle_data.log', level=logging.INFO)
+# def shuffle_table(conn, cursor, table_name, columns):
+#     try:
+#         print(f"Shuffling {table_name} table")
+#         # Retrieve rows from the table in a random order
+#         query = f"SELECT * FROM {table_name} ORDER BY RAND()"
+#         cursor.execute(query)
+#         rows = list(cursor.fetchall())
+#         if not rows:
+#             print(f"No data in {table_name} table")
+#             return False
+        
+#         # Delete existing data in the table
+#         query = f"DELETE FROM {table_name}"
+#         cursor.execute(query)
+        
+#         # Re-insert the rows in the random order
+#         query = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({', '.join(['%s'] * len(columns))})"
+#         for row in rows:
+#             cursor.execute(query, row)
+        
+#         # Commit the changes
+#         conn.commit()
+#         print(f"Changes committed for {table_name} table")
+        
+#         return True
+#     except mysql.connector.Error as err:
+#         # Roll back the changes if an error occurs
+#         print(f"Error: {err}")
+#         conn.rollback()
+#         return False
 
-def shuffle_data():
+def shuffle_table(conn, cursor, table_name, columns):
     try:
-        # Connect to the database with a timeout
-        conn = mysql.connector.connect(**db_config, connect_timeout=10)
-        cursor = conn.cursor()
-    
-        # Shuffle general_questions table
-        query = f"SELECT * FROM general_questions ORDER BY RAND()"
+        print(f"Shuffling {table_name} table")
+        
+        # Retrieve rows from the table
+        query = f"SELECT * FROM {table_name}"
         cursor.execute(query)
-        rows = cursor.fetchall()
-        query = f"DELETE FROM general_questions"
-        cursor.execute(query)
-        query = f"INSERT INTO general_questions (question_number, question) VALUES (%s, %s)"
-        for row in rows:
-            cursor.execute(query, row)
+        rows = list(cursor.fetchall())
+        if not rows:
+            print(f"No data in {table_name} table")
+            return False
+        
+        # Check if the table has a department column
+        has_department = "department" in columns
+        
+        if has_department:
+            # Separate the primary key column and the department column from the other columns
+            primary_key_column = columns[0]
+            department_column = columns[2]
+            other_columns = columns[1:2] + columns[3:]
             
-        # Shuffle specific_questions table
-        query = f"SELECT question_number, question, department FROM specific_questions ORDER BY RAND()"
+            # Group the rows by department
+            department_rows = {}
+            for row in rows:
+                department_value = row[columns.index(department_column)]
+                if department_value not in department_rows:
+                    department_rows[department_value] = []
+                department_rows[department_value].append(row)
+            
+            # Shuffle the rows within each department
+            shuffled_rows = []
+            for department, department_row_list in department_rows.items():
+                transposed_department_rows = list(map(list, zip(*department_row_list)))
+                for i in range(1, len(transposed_department_rows)):
+                    random.shuffle(transposed_department_rows[i])
+                shuffled_department_rows = list(map(list, zip(*transposed_department_rows)))
+                shuffled_rows.extend(shuffled_department_rows)
+        else:
+            # Transpose the data (swap rows and columns)
+            transposed_rows = list(map(list, zip(*rows)))
+            
+            # Shuffle each column (now a row)
+            for row in transposed_rows:
+                random.shuffle(row)
+            
+            # Transpose it back
+            shuffled_rows = list(map(list, zip(*transposed_rows)))
+        
+        # Delete existing data in the table
+        query = f"DELETE FROM {table_name}"
         cursor.execute(query)
-        rows = cursor.fetchall()
-        query = f"DELETE FROM specific_questions"
-        cursor.execute(query)
-        query = f"INSERT INTO specific_questions (question_number, question, department) VALUES (%s, %s, %s)"
-        for row in rows:
+        
+        # Re-insert the shuffled rows
+        query = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({', '.join(['%s'] * len(columns))})"
+        for row in shuffled_rows:
             cursor.execute(query, row)
+        
         # Commit the changes
-        try:
-            conn.commit()
-        except mysql.connector.Error as err:
-            logging.error(f"Error committing changes: {err}")
-            return f"Error committing changes: {err}"
-        # Close the cursor and connection
-        try:
-            cursor.close()
-        except Exception as e:
-            logging.error(f"Error closing cursor: {e}")
-        try:
-            conn.close()
-        except Exception as e:
-            logging.error(f"Error closing connection: {e}")
-        logging.info("Data shuffled successfully!")
-        return "Data shuffled successfully!"
+        conn.commit()
+        print(f"Changes committed for {table_name} table")
+        
+        return True
     except mysql.connector.Error as err:
-        logging.error(f"Error shuffling data: {err}")
-        return f"Error shuffling data: {err}"
-    except Exception as e:
-        logging.error(f"An error occurred: {e}")
-        return f"An error occurred: {e}"
-  
+        # Roll back the changes if an error occurs
+        print(f"Error: {err}")
+        conn.rollback()
+        return False
+
+def shuffle_data(conn, cursor):
+    tables_to_shuffle = {
+        "specific_questions": ["question_number", "question", "department"],
+        "general_questions": ["question_number", "question"]
+    }
+    
+    for table, columns in tables_to_shuffle.items():
+        if not shuffle_table(conn, cursor, table, columns):
+            print(f"Error shuffling {table} table")
+            return False
+    
+    print("Data shuffled successfully!")
+    return True
+
 @app.route('/shuffle_data', methods=['POST'])
 def shuffle_data_route():
+    print("Shuffle data route called")
     try:
-        result = shuffle_data()
-        return result
-    except Exception as e:
-        logging.error(f"Error shuffling data: {e}")
-        return f"Erro shuffling data: {e}", 500
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor()
+        conn.start_transaction()
+        if shuffle_data(conn, cursor):
+            conn.commit()
+            return jsonify({"message": "Data shuffled successfully!"}), 200
+        else:
+            conn.rollback()
+            return jsonify({"error": "Error shuffling data"}), 500
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if 'conn' in locals():
+            conn.rollback()
+        return jsonify({"error": "Database error"}), 500
+    finally:
+        if 'cursor' in locals():
+            cursor.close()
+        if 'conn' in locals():
+            conn.close()
 
 # Define a function to get questions from the database
 def get_questions(department):

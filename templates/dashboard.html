@@ -270,9 +270,25 @@
         document.getElementById("shuffle-button").innerHTML = "Shuffling...";
         try {
             // Make a POST request to the /shuffle_data endpoint
-            await $.post("/shuffle_data");
-            // Re-enable the button and change its text when the request is complete
-            document.getElementById("shuffle-button").innerHTML = "Questions Shuffled!";
+            const response = await fetch("/shuffle_data", {
+                method: "POST"
+            });
+            // Check if the response was successful
+            if (response.ok) {
+                const result = await response.json();
+                if (result.message === "Data shuffled successfully!") {
+                    // Re-enable the button and change its text when the request is complete
+                    document.getElementById("shuffle-button").innerHTML = "Questions Shuffled!";
+                } else {
+                    flash('Unable to shuffle questions. Please try again')
+                    document.getElementById("shuffle-button").disabled = false;
+                    document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
+                }
+            } else {
+                flash('Unable to shuffle questions. Please try again')
+                document.getElementById("shuffle-button").disabled = false;
+                document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
+            }
         } catch (error) {
             // Handle the case where the request fails
             flash('Unable to shuffle questions. Please try again')
