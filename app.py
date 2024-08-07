@@ -7,6 +7,7 @@ from wtforms import StringField, PasswordField, SubmitField, TextAreaField
 from wtforms.validators import DataRequired, Length
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from threading import Timer
+from werkzeug.utils import secure_filename
 import webbrowser
 import mysql.connector
 import uuid
@@ -76,6 +77,76 @@ def question_values():
                                write_in_points=question_points['write_in'],
                                specific_question_points=question_points['specific_question'],
                                general_question_points=question_points['general_question'])
+from werkzeug.utils import secure_filename
+
+@app.route('/storefront')
+@login_required
+def storefront():
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor(dictionary=True)
+    
+    cursor.execute("SELECT * FROM storefront")
+    products = cursor.fetchall()
+    
+    cursor.close()
+    conn.close()
+    
+    return render_template('storefront.html', products=products)
+
+@app.route('/add_item', methods=['POST'])
+@login_required
+def add_item():
+    title = request.form.get('title')
+    description = request.form.get('description')
+    points = request.form.get('points')
+    image = request.files.get('image')
+
+    if image:
+        filename = secure_filename(image.filename)
+        image.save(os.path.join('static', 'uploads', filename))
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+    
+    sql = "INSERT INTO storefront (product_title, description, image, points) VALUES (%s, %s, %s, %s)"
+    val = (title, description, filename, points)
+    cursor.execute(sql, val)
+    conn.commit()
+    
+    cursor.close()
+    conn.close()
+    
+    flash('Product added successfully!', 'success')
+    return redirect(url_for('storefront'))
+
+@app.route('/update_item/<int:item_id>', methods=['POST'])
+@login_required
+def update_item(item_id):
+    title = request.form.get('title')
+    description = request.form.get('description')
+    points = request.form.get('points')
+    image = request.files.get('image')
+    
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    if image:
+        filename = secure_filename(image.filename)
+        image.save(os.path.join('static', 'uploads', filename))
+        sql = "UPDATE storefront SET product_title = %s, description = %s, image = %s, points = %s WHERE id = %s"
+        val = (title, description, filename, points, item_id)
+    else:
+        sql = "UPDATE storefront SET product_title = %s, description = %s, points = %s WHERE id = %s"
+        val = (title, description, points, item_id)
+    
+    cursor.execute(sql, val)
+    conn.commit()
+    
+    cursor.close()
+    conn.close()
+    
+    flash('Product updated successfully!', 'success')
+    return redirect(url_for('storefront'))
 
 
 # User class
