@@ -101,77 +101,8 @@
                         <option value="Sales">Sales</option>
                         <!--Add more here if desired-->
                     </select>
-                    <button id='departmentButton'>Get Questions</button>
+                    <button id='departmentButton' type='button'>Get Questions</button>
                     <div id="question-container"></div>
-                    <!--<label>1. Did you feel productive this week?</label><br>
-                    <input type="radio" id="q1_1" name="q1" value="1">
-                    <label for="q1_1">1</label>
-                    <input type="radio" id="q1_2" name="q1" value="2">
-                    <label for="q1_2">2</label>
-                    <input type="radio" id="q1_3" name="q1" value="3">
-                    <label for="q1_3">3</label>
-                    <input type="radio" id="q1_4" name="q1" value="4">
-                    <label for="q1_4">4</label>
-                    <input type="radio" id="q1_5" name="q1" value="5">
-                    <label for="q1_5">5</label>
-                    <br><br>-->
-
-                    <!--<div id="q1AdditionalDetails" class="additional-details">
-                        <label for="q1Details">Please provide more details:</label><br>
-                        <textarea id="q1Details" name="q1Details" rows="4" cols="50"></textarea><br><br>
-                    </div>-->
-
-                    <!--<label>2. Did you have any obstacles that affected your work?</label><br>
-                    <input type="radio" id="q2_1" name="q2" value="1">
-                    <label for="q2_1">1</label>
-                    <input type="radio" id="q2_2" name="q2" value="2">
-                    <label for="q2_2">2</label>
-                    <input type="radio" id="q2_3" name="q2" value="3">
-                    <label for="q2_3">3</label>
-                    <input type="radio" id="q2_4" name="q2" value="4">
-                    <label for="q2_4">4</label>
-                    <input type="radio" id="q2_5" name="q2" value="5">
-                    <label for="q2_5">5</label><br><br>-->
-
-                    <!--<div id="q2AdditionalDetails" class="additional-details">
-                        <label for="q2Details">Please provide more details:</label><br>
-                        <textarea id="q2Details" name="q2Details" rows="4" cols="50"></textarea><br><br>
-                    </div>-->
-
-                    <!--<label>3. Were you satisfied with the support you received?</label><br>
-                    <input type="radio" id="q3_1" name="q3" value="1">
-                    <label for="q3_1">1</label>
-                    <input type="radio" id="q3_2" name="q3" value="2">
-                    <label for="q3_2">2</label>
-                    <input type="radio" id="q3_3" name="q3" value="3">
-                    <label for="q3_3">3</label>
-                    <input type="radio" id="q3_4" name="q3" value="4">
-                    <label for="q3_4">4</label>
-                    <input type="radio" id="q3_5" name="q3" value="5">
-                    <label for="q3_5">5</label><br><br>
-
-                    <div id="q3AdditionalDetails" class="additional-details">
-                        <label for="q3Details">Please provide more details:</label><br>
-                        <textarea id="q3Details" name="q3Details" rows="4" cols="50"></textarea><br><br>
-                    </div>
-
-                    <label>4. Did you meet your goals for the week?</label><br>
-                    <input type="radio" id="q4_1" name="q4" value="1">
-                    <label for="q4_1">1</label>
-                    <input type="radio" id="q4_2" name="q4" value="2">
-                    <label for="q4_2">2</label>
-                    <input type="radio" id="q4_3" name="q4" value="3">
-                    <label for="q4_3">3</label>
-                    <input type="radio" id="q4_4" name="q4" value="4">
-                    <label for="q4_4">4</label>
-                    <input type="radio" id="q4_5" name="q4" value="5">
-                    <label for="q4_5">5</label><br><br>-->
-
-                    <!--<div id="q4AdditionalDetails" class="additional-details">
-                        <label for="q4Details">Please provide more details:</label><br>
-                        <textarea id="q4Details" name="q4Details" rows="4" cols="50"></textarea><br><br>
-                    </div>-->
-
                     <label>5. Additional Comments:</label><br>
                     <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
                     <button type="submit">Submit Survey</button>
@@ -219,6 +150,7 @@
                 <input type="radio" name="q${questionIndex}" value="5">
                 <label for="q${questionIndex}_5">5</label>
                 <br><br>
+                <input type="hidden" name="q${questionIndex}_type" value="general_question">
                 <div id="q${questionIndex}AdditionalDetails" class="additional-details" style="display: none;">
                     <label for="q${questionIndex}Details">Please provide more details:</label><br>
                     <textarea id="q${questionIndex}Details" name="q${questionIndex}Details" rows="4" cols="50"></textarea><br><br>
@@ -251,6 +183,7 @@
                 <input type="radio" name="q${questionIndex}" value="5">
                 <label for="q${questionIndex}_5">5</label>
                 <br><br>
+                <input type="hidden" name="q${questionIndex}_type" value="specific_question">
                 <div id="q${questionIndex}AdditionalDetails" class="additional-details" style="display: none;">
                     <label for="q${questionIndex}Details">Please provide more details:</label><br>
                     <textarea id="q${questionIndex}Details" name="q${questionIndex}Details" rows="4" cols="50"></textarea><br><br>
