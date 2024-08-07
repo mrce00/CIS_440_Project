@@ -267,7 +267,9 @@ def set_num_ques():
 @app.route('/set_num_ques_value', methods=['POST'])
 @login_required
 def set_num_ques_value():
-    num = request.form.get('numQuestions')
+    num_general = request.form.get('numGeneralQuestions')
+    num_specific = request.form.get('numSpecificQuestions')
+    
     mydb = mysql.connector.connect(
         host="107.180.1.16",
         user="summer2024team2",
@@ -276,8 +278,13 @@ def set_num_ques_value():
     )
     try:
         mycursor = mydb.cursor()
+        
         query = "UPDATE ques_num SET value = %s WHERE public_key = 1"
-        mycursor.execute(query, (num,))
+        mycursor.execute(query, (num_general,))
+        
+        query = "UPDATE ques_num SET value = %s WHERE public_key = 2"
+        mycursor.execute(query, (num_specific,))
+
         mydb.commit()
         mycursor.close()
         flash("Question Number updated!", "success")
@@ -550,13 +557,22 @@ def shuffle_data_route():
 def get_questions(department):
     conn = mysql.connector.connect(**db_config)
     cursor = conn.cursor()
+    
+    # Fetch the number of questions to display from the ques_num table
+    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('general',))
+    general_num_questions = cursor.fetchone()[0]
+    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('specific',))
+    specific_num_questions = cursor.fetchone()[0]
+    
+    # Fetch the questions from the specific and general questions tables
     cursor.execute('SELECT question FROM specific_questions WHERE department = %s', (department,))
-    specific_questions = cursor.fetchall()
+    specific_questions = cursor.fetchall()[:specific_num_questions]
     cursor.execute('SELECT question from general_questions')
-    general_questions = cursor.fetchall()
+    general_questions = cursor.fetchall()[:general_num_questions]
+    
     conn.close()
-    questions_to_return = {'general_questions': general_questions[:2],
-                           'specific_questions': specific_questions[:2]}
+    questions_to_return = {'general_questions': general_questions,
+                           'specific_questions': specific_questions}
     return questions_to_return
 
 
