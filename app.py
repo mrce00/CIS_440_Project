@@ -166,16 +166,38 @@ def dashboard():
 def submit_survey():
     # Retrieve form data
     q1 = request.form.get('q1')
+    q1_type = request.form.get('q1_type')
     q1_details = request.form.get('q1Details') if q1 in ['1', '2', '3'] else None
     q2 = request.form.get('q2')
+    q2_type = request.form.get('q2_type')
     q2_details = request.form.get('q2Details') if q2 in ['1', '2', '3'] else None
     q3 = request.form.get('q3')
+    q3_type = request.form.get('q3_type')
     q3_details = request.form.get('q3Details') if q3 in ['1', '2', '3'] else None
     q4 = request.form.get('q4')
+    q4_type = request.form.get('q4_type')
     q4_details = request.form.get('q4Details') if q4 in ['1', '2', '3'] else None
     comments = request.form.get('comments')
+    reward_id = request.form.get('rewardID')
     datenow = str(datetime.datetime.now())
 
+    with open('question_points.csv', 'r') as file:
+        reader = csv.reader(file)
+        next(reader)
+        question_types = {row[0]: int(row[1]) for row in reader}
+        
+    write_in_point_value = question_types['write_in']
+    
+    # Calculate the total point value
+    total_point_value = 0
+    for q, q_type, q_details in [(q1, q1_type, q1_details), (q2, q2_type, q2_details), (q3, q3_type, q3_details), (q4, q4_type, q4_details)]:
+        total_point_value += question_types.get(q_type, 0)
+        if q_details:
+            total_point_value += write_in_point_value
+
+    if comments:
+        total_point_value += write_in_point_value
+        
     mydb = mysql.connector.connect(
         host="107.180.1.16",
         user="summer2024team2",
@@ -184,8 +206,16 @@ def submit_survey():
     )
     try:
         mycursor = mydb.cursor()
+
+        # Insert data into responses_table
         sql = "INSERT INTO responses_table (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, period) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
+        mycursor.execute(sql, val)
+        mydb.commit()
+
+        # Update the points in the rewards_table
+        sql = "UPDATE rewards_table SET points = points + %s WHERE reward_id = %s"
+        val = (total_point_value, reward_id)
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -409,37 +439,6 @@ def survey_results():
 
     return render_template('survey_results.html', surveys=surveys)
 
-
-# def shuffle_table(conn, cursor, table_name, columns):
-#     try:
-#         print(f"Shuffling {table_name} table")
-#         # Retrieve rows from the table in a random order
-#         query = f"SELECT * FROM {table_name} ORDER BY RAND()"
-#         cursor.execute(query)
-#         rows = list(cursor.fetchall())
-#         if not rows:
-#             print(f"No data in {table_name} table")
-#             return False
-        
-#         # Delete existing data in the table
-#         query = f"DELETE FROM {table_name}"
-#         cursor.execute(query)
-        
-#         # Re-insert the rows in the random order
-#         query = f"INSERT INTO {table_name} ({', '.join(columns)}) VALUES ({', '.join(['%s'] * len(columns))})"
-#         for row in rows:
-#             cursor.execute(query, row)
-        
-#         # Commit the changes
-#         conn.commit()
-#         print(f"Changes committed for {table_name} table")
-        
-#         return True
-#     except mysql.connector.Error as err:
-#         # Roll back the changes if an error occurs
-#         print(f"Error: {err}")
-#         conn.rollback()
-#         return False
 
 def shuffle_table(conn, cursor, table_name, columns):
     try:
