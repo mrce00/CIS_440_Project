@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storefront</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        form, table {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label, input, textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button, .back-link {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover, .back-link:hover {
+            background-color: #0056b3;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .flash {
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .flash.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        .flash.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+    <h1>Storefront Management</h1>
+    <form action="{{ url_for('add_item') }}" method="post" enctype="multipart/form-data">
+        <label for="title">Product Title:</label>
+        <input type="text" id="title" name="title" required>
+
+        <label for="description">Product Description:</label>
+        <textarea id="description" name="description" required></textarea>
+
+        <label for="points">Points:</label>
+        <input type="number" id="points" name="points" required>
+
+        <label for="image">Product Image:</label>
+        <input type="file" id="image" name="image" required>
+
+        <button type="submit">Add Product</button>
+    </form>
+
+    <h2>Products</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Image</th>
+                <th>Points</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <form action="{{ url_for('update_item', item_id=product.id) }}" method="post" enctype="multipart/form-data">
+                    <td><input type="text" name="title" value="{{ product.product_title }}" required></td>
+                    <td><textarea name="description" required>{{ product.description }}</textarea></td>
+                    <td>
+                        <img src="{{ url_for('static', filename='uploads/' ~ product.image) }}" alt="{{ product.product_title }}" style="max-width: 100px;">
+                        <input type="file" name="image">
+                    </td>
+                    <td><input type="number" name="points" value="{{ product.points }}" required></td>
+                    <td><button type="submit">Update</button></td>
+                </form>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('dashboard') }}" class="back-link">Back to Dashboard</a>
+</body>
+</html>
