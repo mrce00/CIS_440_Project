@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flask Button</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column; /* Stack elements vertically */
+        }
+        h1 {
+            text-align: center;
+        }
+        p {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+            text-align: center;
+        }
+        label, p {
+            margin: 10px 0;
+        }
+        input[type="text"], input[type="submit"], button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .additional-details {
+            display: none; /* Hide additional details by default */
+        }
+        .message {
+            margin-top: 20px;
+            color: green;
+            font-weight: bold;
+        }
+
+        .generate-reward-link {
+            color: #007BFF; 
+            text-decoration: none; 
+            font-size: 14px; 
+            margin-top: 10px;
+            display: block;
+        }
+
+        .generate-reward-link:hover {
+            text-decoration: underline;
+            color: #0056b3;
+        }
+
+    </style>
+</head>
+<body>
+      <div>
+    {% for mesg in get_flashed_messages() %}
+    <h1>{{ mesg }}</h1>
+    {% endfor %}
+    <div>
+
+        <div id="surveyModal" class="modal">
+            <div class="modal-content">
+                <h2>Weekly Survey</h2>
+
+                <form id="surveyForm" action="{{ url_for('submit_survey') }}" method="POST">
+                    <label for="rewardID">Reward ID:</label>
+                    <input type="text" id="rewardID" name="rewardID" required value="">
+
+                <!-- Generate Reward ID Link -->
+                    <p><button onclick="fetchUUID()">Don't have a Reward ID? Click here to generate one</button></p>
+                    
+                    <label for="department">Department:</label>
+                    <select id="department" name="department">
+                        <option value="">Select a department</option>
+                        <option value="IT">IT</option>
+                        <option value="R&D">R&D</option>
+                        <option value="HR">HR</option>
+                        <option value="Sales">Sales</option>
+                        <!--Add more here if desired-->
+                    </select>
+                    <button id='departmentButton'>Get Questions</button>
+                    <div id="question-container"></div>
+                    <label>1. Did you feel productive this week?</label><br>
+                    <input type="radio" id="q1_1" name="q1" value="1">
+                    <label for="q1_1">1</label>
+                    <input type="radio" id="q1_2" name="q1" value="2">
+                    <label for="q1_2">2</label>
+                    <input type="radio" id="q1_3" name="q1" value="3">
+                    <label for="q1_3">3</label>
+                    <input type="radio" id="q1_4" name="q1" value="4">
+                    <label for="q1_4">4</label>
+                    <input type="radio" id="q1_5" name="q1" value="5">
+                    <label for="q1_5">5</label>
+                    <br><br>
+
+                    <div id="q1AdditionalDetails" class="additional-details">
+                        <label for="q1Details">Please provide more details:</label><br>
+                        <textarea id="q1Details" name="q1Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
+
+                    <label>2. Did you have any obstacles that affected your work?</label><br>
+                    <input type="radio" id="q2_1" name="q2" value="1">
+                    <label for="q2_1">1</label>
+                    <input type="radio" id="q2_2" name="q2" value="2">
+                    <label for="q2_2">2</label>
+                    <input type="radio" id="q2_3" name="q2" value="3">
+                    <label for="q2_3">3</label>
+                    <input type="radio" id="q2_4" name="q2" value="4">
+                    <label for="q2_4">4</label>
+                    <input type="radio" id="q2_5" name="q2" value="5">
+                    <label for="q2_5">5</label><br><br>
+
+                    <div id="q2AdditionalDetails" class="additional-details">
+                        <label for="q2Details">Please provide more details:</label><br>
+                        <textarea id="q2Details" name="q2Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
+
+                    <label>3. Were you satisfied with the support you received?</label><br>
+                    <input type="radio" id="q3_1" name="q3" value="1">
+                    <label for="q3_1">1</label>
+                    <input type="radio" id="q3_2" name="q3" value="2">
+                    <label for="q3_2">2</label>
+                    <input type="radio" id="q3_3" name="q3" value="3">
+                    <label for="q3_3">3</label>
+                    <input type="radio" id="q3_4" name="q3" value="4">
+                    <label for="q3_4">4</label>
+                    <input type="radio" id="q3_5" name="q3" value="5">
+                    <label for="q3_5">5</label><br><br>
+
+                    <div id="q3AdditionalDetails" class="additional-details">
+                        <label for="q3Details">Please provide more details:</label><br>
+                        <textarea id="q3Details" name="q3Details" rows="4" cols="50"></textarea><br><br>
+                    </div>
+
+                    <label>4. Did you meet your goals for the week?</label><br>
+                    <input type="radio" id="q4_1" name="q4" value="1">
+                    <label for="q4_1">1</label>
+                    <input type="radio" id="q4_2" name="q4" value="2">
+                    <label for="q4_2">2</label>
+                    <input type="radio" id="q4_3" name="q4" value="3">
+                    <label for="q4_3">3</label>
+                    <input type="radio" id="q4_4" name="q4" value="4">
+                    <label for="q4_4">4</label>
+                    <input type="radio" id="q4_5" name="q4" value="5">
+                    <label for="q4_5">5</label><br><br>
+
+                    <div id="q4AdditionalDetails" class="additional-details">
+                        <label for="q4Details">Please provide more details:</label><br>
+                        <textarea id="q4Details" name="q4Details" rows="4" cols="50"></textarea><br><br>
+                    </div> 
+
+                    <label>5. Additional Comments:</label><br>
+                    <textarea id="comments" name="comments" rows="4" cols="50"></textarea><br><br>
+                    <button type="submit">Submit Survey</button>
+
+                </form>
+            </div>
+        </div>
+
+        <p><a href="{{ url_for('login') }}">Login</a> to access the manager dashboard.</p>
+    </div>
+    
+    <script>
+
+        // Get department button
+        const departmentButton = document.getElementById('departmentButton');
+
+        function fetchQuestions(department) {
+            // Fetch the questions from the database
+            fetch('/get_questions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ department: department }),
+            })
+                .then(response => response.json())
+                .then(data => {
+                    // Populate the form with the questions
+                    const generalQuestions = data.general_questions;
+                    const specificQuestions = data.specific_questions;
+                    // Create HTML elements for the questions
+                    const questionElements = [];
+                    let questionIndex = 1;
+
+                    generalQuestions.forEach((question) => {
+                        const questionElement = document.createElement('div');
+                        questionElement.innerHTML = `
+                <label>${questionIndex}. ${question}</label>
+                <input type="radio" name="q${questionIndex}" value="1">
+                <label for="q${questionIndex}_1">1</label>
+                <input type="radio" name="q${questionIndex}" value="2">
+                <label for="q${questionIndex}_2">2</label>
+                <input type="radio" name="q${questionIndex}" value="3">
+                <label for="q${questionIndex}_3">3</label>
+                <input type="radio" name="q${questionIndex}" value="4">
+                <label for="q${questionIndex}_4">4</label>
+                <input type="radio" name="q${questionIndex}" value="5">
+                <label for="q${questionIndex}_5">5</label>
+                <br><br>
+                <div id="q${questionIndex}AdditionalDetails" class="additional-details" style="display: none;">
+                    <label for="q${questionIndex}Details">Please provide more details:</label><br>
+                    <textarea id="q${questionIndex}Details" name="q${questionIndex}Details" rows="4" cols="50"></textarea><br><br>
+                </div>
+            `;
+                        questionElements.push(questionElement);
+
+                        questionElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+                            radio.addEventListener('change', function () {
+                                var question = this.name;
+                                toggleDetails(question);
+                            });
+                        });
+
+                        questionIndex++;
+                    });
+
+                    specificQuestions.forEach((question) => {
+                        const questionElement = document.createElement('div');
+                        questionElement.innerHTML = `
+                <label>${questionIndex}. ${question}</label>
+                <input type="radio" name="q${questionIndex}" value="1">
+                <label for="q${questionIndex}_1">1</label>
+                <input type="radio" name="q${questionIndex}" value="2">
+                <label for="q${questionIndex}_2">2</label>
+                <input type="radio" name="q${questionIndex}" value="3">
+                <label for="q${questionIndex}_3">3</label>
+                <input type="radio" name="q${questionIndex}" value="4">
+                <label for="q${questionIndex}_4">4</label>
+                <input type="radio" name="q${questionIndex}" value="5">
+                <label for="q${questionIndex}_5">5</label>
+                <br><br>
+                <div id="q${questionIndex}AdditionalDetails" class="additional-details" style="display: none;">
+                    <label for="q${questionIndex}Details">Please provide more details:</label><br>
+                    <textarea id="q${questionIndex}Details" name="q${questionIndex}Details" rows="4" cols="50"></textarea><br><br>
+                </div>
+            `;
+                        questionElements.push(questionElement);
+                        questionElement.querySelectorAll('input[type="radio"]').forEach(radio => {
+                            radio.addEventListener('change', function () {
+                                var question = this.name;
+                                toggleDetails(question);
+                            });
+                        });
+
+                        questionIndex++;
+                    });
+
+                    // Add the question elements to the form
+                    const questionContainer = document.getElementById('question-container');
+                    questionContainer.innerHTML = '';
+                    questionElements.forEach((questionElement) => {
+                        questionContainer.appendChild(questionElement);
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error fetching questions:', error);
+                });
+        }
+
+        // Add an event listener to the department button
+        departmentButton.addEventListener('click', () => {
+            // Get the department value
+            const department = document.getElementById('department').value;
+
+            // Call fetchQuestions
+            fetchQuestions(department);
+        });
+
+        function handleSurveySubmit(event) {
+            event.preventDefault(); // Prevent default form submission
+        }
+
+        function toggleDetails(question) {
+            var selectedRating = document.querySelector(`input[name="${question}"]:checked`);
+            var detailsBox = document.getElementById(`${question}AdditionalDetails`);
+            if (selectedRating && ['1', '2', '3'].includes(selectedRating.value)) {
+                detailsBox.style.display = 'block';
+            } else {
+                detailsBox.style.display = 'none';
+            }
+        }
+
+        //document.querySelectorAll('input[type="radio"]').forEach(radio => {
+        //    radio.addEventListener('change', function() {
+        //        var question = this.name;
+        //        toggleDetails(question);
+        //    });
+        //});
+
+        async function fetchUUID() {
+            try {
+                let response = await fetch('/generate_reward_id');
+                if (response.ok) {
+                    let data = await response.json();
+                    document.getElementById('rewardID').value = data.value;
+                } else {
+                    console.error('Failed to fetch UUID from backend');
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+    </script>
+</body>
+</html>

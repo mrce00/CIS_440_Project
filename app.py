@@ -166,38 +166,16 @@ def dashboard():
 def submit_survey():
     # Retrieve form data
     q1 = request.form.get('q1')
-    q1_type = request.form.get('q1_type')
     q1_details = request.form.get('q1Details') if q1 in ['1', '2', '3'] else None
     q2 = request.form.get('q2')
-    q2_type = request.form.get('q2_type')
     q2_details = request.form.get('q2Details') if q2 in ['1', '2', '3'] else None
     q3 = request.form.get('q3')
-    q3_type = request.form.get('q3_type')
     q3_details = request.form.get('q3Details') if q3 in ['1', '2', '3'] else None
     q4 = request.form.get('q4')
-    q4_type = request.form.get('q4_type')
     q4_details = request.form.get('q4Details') if q4 in ['1', '2', '3'] else None
     comments = request.form.get('comments')
-    reward_id = request.form.get('rewardID')
     datenow = str(datetime.datetime.now())
 
-    with open('question_points.csv', 'r') as file:
-        reader = csv.reader(file)
-        next(reader)
-        question_types = {row[0]: int(row[1]) for row in reader}
-        
-    write_in_point_value = question_types['write_in']
-    
-    # Calculate the total point value
-    total_point_value = 0
-    for q, q_type, q_details in [(q1, q1_type, q1_details), (q2, q2_type, q2_details), (q3, q3_type, q3_details), (q4, q4_type, q4_details)]:
-        total_point_value += question_types.get(q_type, 0)
-        if q_details:
-            total_point_value += write_in_point_value
-
-    if comments:
-        total_point_value += write_in_point_value
-        
     mydb = mysql.connector.connect(
         host="107.180.1.16",
         user="summer2024team2",
@@ -206,16 +184,8 @@ def submit_survey():
     )
     try:
         mycursor = mydb.cursor()
-
-        # Insert data into responses_table
         sql = "INSERT INTO responses_table (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, period) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
         val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
-        mycursor.execute(sql, val)
-        mydb.commit()
-
-        # Update the points in the rewards_table
-        sql = "UPDATE rewards_table SET points = points + %s WHERE reward_id = %s"
-        val = (total_point_value, reward_id)
         mycursor.execute(sql, val)
         mydb.commit()
 
@@ -294,6 +264,48 @@ def set_num_ques_value():
         mycursor.close()
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('set_num_ques'))
+
+# @app.route('/api/survey_data')
+# @login_required
+# def survey_data():
+#     mydb = mysql.connector.connect(
+#         host="107.180.1.16",
+#         user="summer2024team2",
+#         password="summer2024team2",
+#         database="summer2024team2"
+#     )
+#     try:
+#         mycursor = mydb.cursor(dictionary=True)
+#         # Query to aggregate data
+#         mycursor.execute("""
+#             SELECT 
+#                 period AS date,
+#                 AVG(CASE WHEN q1 IS NOT NULL THEN CAST(q1 AS UNSIGNED) ELSE NULL END) AS avg_q1,
+#                 AVG(CASE WHEN q2 IS NOT NULL THEN CAST(q2 AS UNSIGNED) ELSE NULL END) AS avg_q2,
+#                 AVG(CASE WHEN q3 IS NOT NULL THEN CAST(q3 AS UNSIGNED) ELSE NULL END) AS avg_q3,
+#                 AVG(CASE WHEN q4 IS NOT NULL THEN CAST(q4 AS UNSIGNED) ELSE NULL END) AS avg_q4
+#             FROM responses_table
+#             GROUP BY period
+#             ORDER BY period
+#         """)
+#         results = mycursor.fetchall()
+        
+#         # Process results into a format suitable for Chart.js
+#         data = {
+#             'labels': [result['date'] for result in results],
+#             'dataset1': [result['avg_q1'] for result in results],
+#             'dataset2': [result['avg_q2'] for result in results],
+#             'dataset3': [result['avg_q3'] for result in results],
+#             'dataset4': [result['avg_q4'] for result in results]
+#         }
+#         return jsonify(data)
+#     except Exception as e:
+#         flash(f'Error fetching survey data: {str(e)}')
+#         return jsonify({'error': 'Failed to fetch data'})
+#     finally:
+#         mycursor.close()
+#         mydb.close()
+
 
 
 @app.route('/create_account', methods=['POST'])
@@ -382,6 +394,16 @@ def add_general_question():
     return '', 200  # Return success status
 
 
+@app.route('/api/survey_data')
+def survey_data():
+    # Fetch and process the data
+    # Example data format
+    data = {
+        "2024-08-01": {"q1": 4, "q2": 3, "q3": 4, "q4": 5},
+        "2024-08-02": {"q1": 3, "q2": 4, "q3": 4, "q4": 4},
+        "2024-08-03": {"q1": 5, "q2": 2, "q3": 5, "q4": 5}
+    }
+    return jsonify(data)
 
 @app.route('/questions')
 @login_required
@@ -445,7 +467,6 @@ def survey_results():
         mydb.close()
 
     return render_template('survey_results.html', surveys=surveys)
-
 
 def shuffle_table(conn, cursor, table_name, columns):
     try:
