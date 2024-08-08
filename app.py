@@ -236,21 +236,18 @@ def dashboard():
 @app.route('/submit_survey', methods=['POST'])
 def submit_survey():
     # Retrieve form data
-    q1 = request.form.get('q1')
-    q1_type = request.form.get('q1_type')
-    q1_details = request.form.get('q1Details') if q1 in ['1', '2', '3'] else None
-    q2 = request.form.get('q2')
-    q2_type = request.form.get('q2_type')
-    q2_details = request.form.get('q2Details') if q2 in ['1', '2', '3'] else None
-    q3 = request.form.get('q3')
-    q3_type = request.form.get('q3_type')
-    q3_details = request.form.get('q3Details') if q3 in ['1', '2', '3'] else None
-    q4 = request.form.get('q4')
-    q4_type = request.form.get('q4_type')
-    q4_details = request.form.get('q4Details') if q4 in ['1', '2', '3'] else None
-    comments = request.form.get('comments')
-    reward_id = request.form.get('rewardID')
-    datenow = str(datetime.datetime.now())
+    data = request.form
+    questions = [key for key in data.keys() if key.startswith('q') and not key.endswith('_type') and not key.endswith('Details')]
+    answers = {}
+    for question in questions:
+        answers[question] = {
+            'answer': data.get(question),
+            'type': data.get(f'{question}_type'),
+            'details': data.get(f'{question}Details')
+        }
+    comments = data.get('comments')
+    reward_id = data.get('rewardID')
+    datenow = datetime.datetime.now()
 
     with open('question_points.csv', 'r') as file:
         reader = csv.reader(file)
@@ -261,9 +258,9 @@ def submit_survey():
     
     # Calculate the total point value
     total_point_value = 0
-    for q, q_type, q_details in [(q1, q1_type, q1_details), (q2, q2_type, q2_details), (q3, q3_type, q3_details), (q4, q4_type, q4_details)]:
-        total_point_value += question_types.get(q_type, 0)
-        if q_details:
+    for question, answer in answers.items():
+        total_point_value += question_types.get(answer['type'], 0)
+        if answer['details']:
             total_point_value += write_in_point_value
 
     if comments:
@@ -279,10 +276,35 @@ def submit_survey():
         mycursor = mydb.cursor()
 
         # Insert data into responses_table
-        sql = "INSERT INTO responses_table (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, period) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        val = (q1, q1_details, q2, q2_details, q3, q3_details, q4, q4_details, comments, datenow)
+        sql = "INSERT INTO responses_table (comments, period, reward_id) VALUES (%s, %s, %s)"
+        val = (comments, datenow, reward_id)
         mycursor.execute(sql, val)
+        response_id = mycursor.lastrowid
         mydb.commit()
+
+        # Get the question IDs from the questions_table
+        question_ids = {}
+        for question in questions:
+            sql = "SELECT question_id FROM questions_table WHERE question_text = %s"
+            val = (question,)
+            mycursor.execute(sql, val)
+            result = mycursor.fetchone()
+            if result:
+                question_ids[question] = result[0]
+            else:
+                # If the question is not found in the questions_table, insert it
+                sql = "INSERT INTO questions_table (question_text, question_type) VALUES (%s, %s)"
+                val = (question, answers[question]['type'])
+                mycursor.execute(sql, val)
+                question_ids[question] = mycursor.lastrowid
+                mydb.commit()
+
+        # Insert data into answers_table
+        for question, answer in answers.items():
+            sql = "INSERT INTO answers_table (response_id, question_id, answer, details) VALUES (%s, %s, %s, %s)"
+            val = (response_id, question_ids[question], answer['answer'], answer['details'])
+            mycursor.execute(sql, val)
+            mydb.commit()
 
         # Update the points in the rewards_table
         sql = "UPDATE rewards_table SET points = points + %s WHERE reward_id = %s"
