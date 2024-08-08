@@ -16,7 +16,7 @@ import os
 import logging
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your_secret_key_here'  # Replace with a strong secret key
+app.config['SECRET_KEY'] = 'secret_key'  
 
 # Set threshold value for write-in answers
 threshold = 3
@@ -493,6 +493,57 @@ def generate_reward_id():
         cursor.close()
         flash(f"An error occurred: {error}", "error")
         return redirect(url_for('index'))
+@app.route('/userstorefront', methods=['GET', 'POST'])
+def userstorefront():
+    if request.method == 'POST':
+        reward_id = request.form.get('rewardID')
+        conn = mysql.connector.connect(**db_config)
+        cursor = conn.cursor(dictionary=True)
+        cursor.execute("SELECT points FROM rewards_table WHERE reward_id = %s", (reward_id,))
+        reward = cursor.fetchone()
+        if reward:
+            points = reward['points']
+            cursor.execute("SELECT * FROM storefront")
+            products = cursor.fetchall()
+            return render_template('userstorefront.html', reward_id=reward_id, points=points, products=products)
+        else:
+            flash('Reward ID does not exist', 'error')
+            return redirect(url_for('userstorefront'))
+    return render_template('userstorefront.html')
+
+@app.route('/redeem_product', methods=['POST'])
+def redeem_product():
+    reward_id = request.form.get('rewardID')
+    product_id = request.form.get('productID')
+
+    conn = mysql.connector.connect(**db_config)
+    cursor = conn.cursor()
+
+    try:
+        # Get the product points
+        cursor.execute("SELECT points FROM storefront WHERE id = %s", (product_id,))
+        product_points = cursor.fetchone()[0]
+
+        # Get the user's current points
+        cursor.execute("SELECT points FROM rewards_table WHERE reward_id = %s", (reward_id,))
+        user_points = cursor.fetchone()[0]
+
+        if user_points >= product_points:
+            # Deduct points and update the rewards_table
+            cursor.execute("UPDATE rewards_table SET points = points - %s WHERE reward_id = %s", (product_points, reward_id))
+            conn.commit()
+            flash("Product has been redeemed!", "success")
+        else:
+            flash("You do not have enough points to redeem this product.", "error")
+    except Exception as e:
+        conn.rollback()
+        flash(f"An error occurred: {str(e)}", "error")
+    finally:
+        cursor.close()
+        conn.close()
+
+    return redirect(url_for('userstorefront'))
+
 
 @app.route('/survey_results')
 @login_required
