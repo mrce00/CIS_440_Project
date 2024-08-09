@@ -69,9 +69,12 @@
         {% endfor %}
 
         <form action="{{ url_for('set_num_ques_value') }}" method="POST">
-            <label for="numQuestions">Number of Questions:</label>
-            <input type="number" id="numQuestions" name="numQuestions" min="1" required>
-            
+            <label for="numGeneralQuestions">Number of General Questions:</label>
+            <input type="number" id="numGeneralQuestions" name="numGeneralQuestions" min="1" required>
+
+            <label for="numSpecificQuestions">Number of Specific Questions:</label>
+            <input type="number" id="numSpecificQuestions" name="numSpecificQuestions" min="1" required>
+
             <button type="submit">Set Number of Questions</button>
         </form>
         <p id="message" class="message"></p>
