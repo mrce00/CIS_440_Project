@@ -237,15 +237,13 @@ def dashboard():
 def submit_survey():
     # Retrieve form data
     data = request.form
-    print(data)
-    questions = [key for key in data.keys() if key.startswith('q') and not key.endswith('_type') and not key.endswith('Details') and not key.endswith('_actual')]
+    questions = [key for key in data.keys() if key.startswith('q') and not key.endswith('_type') and not key.endswith('Details')]
     answers = {}
     for question in questions:
         answers[question] = {
             'answer': data.get(question),
             'type': data.get(f'{question}_type'),
-            'details': data.get(f'{question}Details'),
-            'question_actual': data.get(f'{question}_actual')
+            'details': data.get(f'{question}Details')
         }
     comments = data.get('comments')
     reward_id = data.get('rewardID')
@@ -295,8 +293,8 @@ def submit_survey():
                 question_ids[question] = result[0]
             else:
                 # If the question is not found in the questions_table, insert it
-                sql = "INSERT INTO questions_table (question_text, question_type, question) VALUES (%s, %s, %s)"
-                val = (question, answers[question]['type'], answers[question]['question_actual'])
+                sql = "INSERT INTO questions_table (question_text, question_type) VALUES (%s, %s)"
+                val = (question, answers[question]['type'])
                 mycursor.execute(sql, val)
                 question_ids[question] = mycursor.lastrowid
                 mydb.commit()
@@ -338,6 +336,7 @@ def set_survey_date_range():
     )
     try:
         mycursor = mydb.cursor()
+        # Assuming you have a table `survey_settings` with columns `start_date` and `end_date`
         sql = "UPDATE survey_settings SET start_date = %s, end_date = %s WHERE id = 1"
         val = (start_date, end_date)
         mycursor.execute(sql, val)
@@ -580,31 +579,16 @@ def survey_results():
     )
     try:
         mycursor = mydb.cursor(dictionary=True)  # Use dictionary=True for easier access to column names
-        # Note: DATE_FORMAT can be changed to display different information on the graph if desired
-        mycursor.execute("""
-            SELECT             
-                DATE_FORMAT(r.period, '%M %d, %Y') AS period,
-                q.question AS question,
-                q.question_text AS question_number,
-                COALESCE(a.answer, 0) AS answer
-            FROM 
-                questions_table q
-            LEFT JOIN 
-                answers_table a ON q.question_id = a.question_id
-            LEFT JOIN 
-                responses_table r ON a.response_id = r.response_id
-            ORDER BY 
-                r.period ASC, q.question_text ASC
-        """)
-        graph_data = mycursor.fetchall()
+        mycursor.execute("SELECT * FROM responses_table")
+        surveys = mycursor.fetchall()
     except Exception as e:
         flash(f'Error fetching survey results: {str(e)}')
-        graph_data = []
+        surveys = []
     finally:
         mycursor.close()
         mydb.close()
 
-    return render_template('survey_results.html', graph_data=graph_data)
+    return render_template('survey_results.html', surveys=surveys)
 
 
 def shuffle_table(conn, cursor, table_name, columns):

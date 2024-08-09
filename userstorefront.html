@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Points Redeeming Store</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+            position: relative;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        form, .products {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label, input, textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        button {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            text-align: center;
+            color: #fff;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            text-decoration: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .products {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .product {
+            flex: 1 0 200px; 
+            max-width: 200px; 
+            margin: 10px;
+            padding: 10px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            text-align: center;
+            box-sizing: border-box; 
+        }
+        .product img {
+            max-width: 100%;
+            height: auto;
+        }
+        .points-display {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+        .flash {
+            text-align: center;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid transparent;
+            border-radius: 5px;
+        }
+        .flash.error {
+            color: #721c24;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+        }
+        .redeemed-product {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 9999;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 80%;
+            max-width: 400px; 
+        }
+        .redeemed-product img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            transition: transform 0.3s ease; 
+        }
+        .redeemed-product img.enlarged {
+            transform: scale(1.2); 
+        }
+        .redeemed-product p {
+            margin-top: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            text-align: center;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div id="main-content">
+        <h1>Points Redeeming Store</h1>
+        <h2>Redeem the points you have earned from the surveys</h2>
+        <form method="POST">
+            <label for="rewardID">Enter Reward ID:</label>
+            <input type="text" id="rewardID" name="rewardID" required>
+            <button type="submit">Check Points</button>
+        </form>
+        {% if points is not none %}
+        <div class="points-display">
+            You currently have {{ points }} points
+        </div>
+        <div class="products">
+            {% for product in products %}
+            <div class="product">
+                <h3>{{ product.product_title }}</h3>
+                <p>{{ product.description }}</p>
+                <img src="{{ url_for('static', filename='uploads/' ~ product.image) }}" alt="{{ product.product_title }}">
+                <p>Points: {{ product.points }}</p>
+                <form action="{{ url_for('redeem_product') }}" method="POST" class="redeem-form">
+                    <input type="hidden" name="rewardID" value="{{ reward_id }}">
+                    <input type="hidden" name="productID" value="{{ product.id }}">
+                    <input type="hidden" name="productImage" value="{{ product.image }}">
+                    <button type="submit">Redeem</button>
+                </form>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+
+ 
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div id="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
+
+   
+    <canvas id="confetti-canvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+    <div id="redeemed-product-container" class="redeemed-product" style="display:none;">
+        <img id="redeemed-product-image" />
+        <p id="redeemed-product-message">Product has been redeemed!</p>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <script>
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            const flashMessages = document.getElementById("flash-messages");
+            if (flashMessages && flashMessages.innerText.includes("Product has been redeemed!")) {
+                document.getElementById("main-content").style.display = 'none'; 
+                const duration = 5 * 1000;
+                const end = Date.now() + duration;
+                
+          
+                const redeemedProductContainer = document.getElementById('redeemed-product-container');
+                const redeemedProductImage = document.getElementById('redeemed-product-image');
+                const productImageSrc = sessionStorage.getItem('redeemedProductImage');
+                if (productImageSrc) {
+                    redeemedProductImage.src = productImageSrc;
+                    redeemedProductImage.classList.add('enlarged'); 
+                    redeemedProductContainer.style.display = 'block';
+                }
+
+                (function frame() {
+                    confetti({
+                        particleCount: 3,
+                        angle: 60,
+                        spread: 55,
+                        origin: { x: 0 }
+                    });
+                    confetti({
+                        particleCount: 3,
+                        angle: 120,
+                        spread: 55,
+                        origin: { x: 1 }
+                    });
+
+                    if (Date.now() < end) {
+                        requestAnimationFrame(frame);
+                    }
+                }());
+
+                setTimeout(() => {
+                    redeemedProductContainer.style.display = 'none';
+                    const redeemMore = confirm("Product has been redeemed! Do you want to redeem more?");
+                    if (redeemMore) {
+                        window.location.href = "{{ url_for('userstorefront', rewardID=reward_id) }}";
+                    } else {
+                        window.location.href = "{{ url_for('index') }}";
+                    }
+                }, 5000); 
+            }
+        });
+
+       
+        document.querySelectorAll('.redeem-form').forEach(form => {
+            form.addEventListener('submit', function() {
+                const productImage = this.querySelector('input[name="productImage"]').value;
+                const productImageSrc = `{{ url_for('static', filename='uploads/') }}${productImage}`;
+                sessionStorage.setItem('redeemedProductImage', productImageSrc);
+            });
+        });
+    </script>
+</body>
+</html>
+

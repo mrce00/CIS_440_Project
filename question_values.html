@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Points</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+        }
+        form {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        label {
+            display: block;
+            margin-bottom: 10px;
+        }
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+        button[type="submit"] {
+            background-color: #007bff;
+            color: #fff;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+            button[type="submit"]:hover {
+                background-color: #0056b3;
+            }
+    </style>
+</head>
+<body>
+    <h1>Question Points</h1>
+    <form action="" method="POST">
+        <label for="write_in_points">Write-in Points:</label>
+        <input type="number" id="write_in_points" name="write_in_points" value="{{ write_in_points }}" required>
+        <br><br>
+        <label for="specific_question_points">Specific Question Points:</label>
+        <input type="number" id="specific_question_points" name="specific_question_points" value="{{ specific_question_points }}" required>
+        <br><br>
+        <label for="general_question_points">General Question Points:</label>
+        <input type="number" id="general_question_points" name="general_question_points" value="{{ general_question_points }}" required>
+        <br><br>
+        <button type="submit">Update Points</button>
+    </form>
+</body>
+</html>
