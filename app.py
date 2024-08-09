@@ -532,15 +532,16 @@ def survey_results():
         # Note: DATE_FORMAT can be changed to display different information on the graph if desired
         mycursor.execute("""
             SELECT             
-                DATE_FORMAT(r.period, '%M %d, %Y') AS period, 
-                q.question_text, 
+                DATE_FORMAT(r.period, '%M %d, %Y') AS period,
+                q.question AS question,
+                q.question_text AS question_number,
                 COALESCE(a.answer, 0) AS answer
             FROM 
-                responses_table r
-            CROSS JOIN 
                 questions_table q
             LEFT JOIN 
-                answers_table a ON r.response_id = a.response_id AND q.question_id = a.question_id
+                answers_table a ON q.question_id = a.question_id
+            LEFT JOIN 
+                responses_table r ON a.response_id = r.response_id
             ORDER BY 
                 r.period ASC, q.question_text ASC
         """)
