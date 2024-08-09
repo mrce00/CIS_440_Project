@@ -237,6 +237,7 @@ def dashboard():
 def submit_survey():
     # Retrieve form data
     data = request.form
+    print(data)
     questions = [key for key in data.keys() if key.startswith('q') and not key.endswith('_type') and not key.endswith('Details')]
     answers = {}
     for question in questions:

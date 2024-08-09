@@ -2,54 +2,36 @@
 <html>
 <head>
     <title>Survey Results</title>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
 </head>
 <body>
     <h1>Survey Results</h1>
     <div>
-        <canvas id="graph"></canvas>
+        <table id="survey-results-table" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Question Text</th>
+                    <th>Answer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in graph_data %}
+                <tr>
+                    <td>{{ row.period }}</td>
+                    <td>{{ row.question_text }}</td>
+                    <td>{{ row.answer }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
     <script>
-        const graphData = {{ graph_data | tojson }};
-        const labels = graphData.map(row => row.period);
-        const datasets = [];
-        const questionTexts = [...new Set(graphData.map(row => row.question_text))];
-        questionTexts.forEach((questionText) => {
-            const questionData = graphData.filter(row => row.question_text === questionText);
-            const data = questionData.map(row => row.answer);
-            datasets.push({
-                label: questionText,
-                data: data,
-                backgroundColor: getRandomColor(),
-                borderColor: getRandomColor(),
-                borderWidth: 1
-            });
+        $(document).ready(function () {
+            $('#survey-results-table').DataTable();
         });
-
-        const ctx = document.getElementById('graph').getContext('2d');
-        const chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: datasets
-            },
-            options: {
-                scales: {
-                    y: {
-                        beginAtZero: true
-                    }
-                }
-            }
-        });
-
-        function getRandomColor() {
-            const letters = '0123456789ABCDEF';
-            let color = '#';
-            for (let i = 0; i < 6; i++) {
-                color += letters[Math.floor(Math.random() * 16)];
-            }
-            return color;
-        }
     </script>
 </body>
 </html>
