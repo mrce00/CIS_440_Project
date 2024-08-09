@@ -1,84 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Survey Results</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f9f9f9;
-            padding: 20px;
-        }
-        h1 {
-            text-align: center;
-            color: #333;
-        }
-        p {
-            text-align: center;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-            background-color: #fff;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-            border-radius: 8px;
-            overflow: hidden;
-        }
-        thead {
-            background-color: #007bff;
-            color: #fff;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-        }
-        th {
-            font-weight: bold;
-        }
-        tbody tr:nth-child(even) {
-            background-color: #f2f2f2;
-        }
-        tbody tr:hover {
-            background-color: #ddd;
-        }
-        a {
-            text-decoration: none;
-            color: #007bff;
-        }
-        a:hover {
-            text-decoration: underline;
-        }
-    </style>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.20/css/jquery.dataTables.min.css">
 </head>
 <body>
-<h1>Survey Results</h1>
-<p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
-
-<table>
-    <thead>
-    <tr>
-        <th>Username</th>
-        <th>Productive</th>
-        <th>Workload</th>
-        <th>Resources</th>
-        <th>Obstacles</th>
-        <th>Comments</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for survey in surveys %}
-    <tr>
-        <td>{{ survey.username }}</td>
-        <td>{{ survey.q1 }}</td>
-        <td>{{ survey.q2 }}</td>
-        <td>{{ survey.q3 }}</td>
-        <td>{{ survey.q4 }}</td>
-        <td>{{ survey.comments }}</td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
+    <h1>Survey Results</h1>
+    <div>
+        <table id="survey-results-table" class="display" style="width:100%">
+            <thead>
+                <tr>
+                    <th>Period</th>
+                    <th>Question Text</th>
+                    <th>Answer</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in graph_data %}
+                <tr>
+                    <td>{{ row.period }}</td>
+                    <td>{{ row.question_text }}</td>
+                    <td>{{ row.answer }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.datatables.net/1.10.20/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#survey-results-table').DataTable();
+        });
+    </script>
 </body>
 </html>
