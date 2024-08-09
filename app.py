@@ -238,13 +238,14 @@ def submit_survey():
     # Retrieve form data
     data = request.form
     print(data)
-    questions = [key for key in data.keys() if key.startswith('q') and not key.endswith('_type') and not key.endswith('Details')]
+    questions = [key for key in data.keys() if key.startswith('q') and not key.endswith('_type') and not key.endswith('Details') and not key.endswith('_actual')]
     answers = {}
     for question in questions:
         answers[question] = {
             'answer': data.get(question),
             'type': data.get(f'{question}_type'),
-            'details': data.get(f'{question}Details')
+            'details': data.get(f'{question}Details'),
+            'question_actual': data.get(f'{question}_actual')
         }
     comments = data.get('comments')
     reward_id = data.get('rewardID')
@@ -294,8 +295,8 @@ def submit_survey():
                 question_ids[question] = result[0]
             else:
                 # If the question is not found in the questions_table, insert it
-                sql = "INSERT INTO questions_table (question_text, question_type) VALUES (%s, %s)"
-                val = (question, answers[question]['type'])
+                sql = "INSERT INTO questions_table (question_text, question_type, question) VALUES (%s, %s, %s)"
+                val = (question, answers[question]['type'], answers[question]['question_actual'])
                 mycursor.execute(sql, val)
                 question_ids[question] = mycursor.lastrowid
                 mydb.commit()
