@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey Results</title>
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+        canvas {
+            width: 100%;
+            height: 400px;
+        }
+    </style>
+    <!-- Include Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Survey Results</h1>
+
+    <!-- Display the table -->
+    {% if surveys %}
+    <table>
+        <thead>
+            <tr>
+                <th>Response ID</th>
+                <th>Comments</th>
+                <th>Period</th>
+                <th>Reward ID</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for survey in surveys %}
+            <tr>
+                <td>{{ survey.response_id }}</td>
+                <td>{{ survey.comments }}</td>
+                <td>{{ survey.period }}</td>
+                <td>{{ survey.reward_id }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>No survey results available.</p>
+    {% endif %}
+
+    <!-- Canvas element for the chart -->
+    <canvas id="surveyChart"></canvas>
+
+    <script>
+        // Data for the chart
+        const surveyData = {{ surveys | tojson }};
+        
+        // Prepare the data for the chart
+        const labels = surveyData.map(s => s.question_text || `Question ${s.question_id}`);
+        const data = surveyData.map(s => s.answer || 0); // Assume answer is numeric; modify as needed
+
+        // Chart configuration
+        const ctx = document.getElementById('surveyChart').getContext('2d');
+        const surveyChart = new Chart(ctx, {
+            type: 'line', // Change this to 'bar', 'pie', etc. if needed
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Survey Answers',
+                    data: data,
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Questions'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Answers'
+                        },
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
