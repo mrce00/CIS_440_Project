@@ -11,7 +11,8 @@
             <thead>
                 <tr>
                     <th>Period</th>
-                    <th>Question Text</th>
+                    <th>Question</th>
+                    <th>Question Number</th>
                     <th>Answer</th>
                 </tr>
             </thead>
@@ -19,7 +20,8 @@
                 {% for row in graph_data %}
                 <tr>
                     <td>{{ row.period }}</td>
-                    <td>{{ row.question_text }}</td>
+                    <td>{{ row.question }}</td>
+                    <td>{{ row.question_number }}</td>
                     <td>{{ row.answer }}</td>
                 </tr>
                 {% endfor %}
