@@ -336,7 +336,6 @@ def set_survey_date_range():
     )
     try:
         mycursor = mydb.cursor()
-        # Assuming you have a table `survey_settings` with columns `start_date` and `end_date`
         sql = "UPDATE survey_settings SET start_date = %s, end_date = %s WHERE id = 1"
         val = (start_date, end_date)
         mycursor.execute(sql, val)
@@ -528,16 +527,30 @@ def survey_results():
     )
     try:
         mycursor = mydb.cursor(dictionary=True)  # Use dictionary=True for easier access to column names
-        mycursor.execute("SELECT * FROM responses_table")
-        surveys = mycursor.fetchall()
+        # Note: DATE_FORMAT can be changed to display different information on the graph if desired
+        mycursor.execute("""
+            SELECT             
+                DATE_FORMAT(r.period, '%M %d, %Y') AS period, 
+                q.question_text, 
+                COALESCE(a.answer, 0) AS answer
+            FROM 
+                responses_table r
+            CROSS JOIN 
+                questions_table q
+            LEFT JOIN 
+                answers_table a ON r.response_id = a.response_id AND q.question_id = a.question_id
+            ORDER BY 
+                r.period ASC, q.question_text ASC
+        """)
+        graph_data = mycursor.fetchall()
     except Exception as e:
         flash(f'Error fetching survey results: {str(e)}')
-        surveys = []
+        graph_data = []
     finally:
         mycursor.close()
         mydb.close()
 
-    return render_template('survey_results.html', surveys=surveys)
+    return render_template('survey_results.html', graph_data=graph_data)
 
 
 def shuffle_table(conn, cursor, table_name, columns):
