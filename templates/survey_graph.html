@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Survey Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>Survey Results</h1>
+    <canvas id="surveyGraph"></canvas>
+    <script>
+        const ctx = document.getElementById('surveyGraph').getContext('2d');
+        const surveyGraph = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Survey Results',
+                    data: [],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Get the graph data from the Flask route
+        const graphData = {{ graph_data | tojson }};
+
+        // Update the graph with the data
+        const periods = [...new Set(graphData.map(data => data.period))];
+        const questions = [...new Set(graphData.map(data => data.question))];
+        const datasets = [];
+
+        for (let i = 0; i < questions.length; i++) {
+            const question = questions[i];
+            const answers = graphData.filter(data => data.question === question).map(data => data.answer);
+            const dataset = {
+                label: question,
+                data: answers,
+                backgroundColor: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 0.2)`,
+                borderColor: `rgba(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, 1)`,
+                borderWidth: 1
+            };
+            datasets.push(dataset);
+        }
+
+        surveyGraph.data.labels = periods;
+        surveyGraph.data.datasets = datasets;
+        surveyGraph.update();
+    </script>
+</body>
+</html>

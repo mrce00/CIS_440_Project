@@ -586,6 +586,44 @@ def survey_results():
     return render_template('survey_results.html', graph_data=graph_data)
 
 
+@app.route('/survey_graph')
+@login_required
+def survey_graph():
+    # Connect to the database
+    mydb = mysql.connector.connect(
+        host="107.180.1.16",
+        user="summer2024team2",
+        password="summer2024team2",
+        database="summer2024team2"
+    )
+    try:
+        mycursor = mydb.cursor(dictionary=True)  # Use dictionary=True for easier access to column names
+        # Note: DATE_FORMAT can be changed to display different information on the graph if desired
+        mycursor.execute("""
+            SELECT             
+                DATE_FORMAT(r.period, '%M %d, %Y') AS period,
+                q.question AS question,
+                q.question_text AS question_number,
+                COALESCE(a.answer, 0) AS answer
+            FROM 
+                questions_table q
+            LEFT JOIN 
+                answers_table a ON q.question_id = a.question_id
+            LEFT JOIN 
+                responses_table r ON a.response_id = r.response_id
+            ORDER BY 
+                r.period ASC, q.question_text ASC
+        """)
+        graph_data = mycursor.fetchall()
+    except Exception as e:
+        flash(f'Error fetching survey results: {str(e)}')
+        graph_data = []
+    finally:
+        mycursor.close()
+        mydb.close()
+
+    return render_template('survey_graph.html', graph_data=graph_data)
+
 def shuffle_table(conn, cursor, table_name, columns):
     try:
         print(f"Shuffling {table_name} table")
