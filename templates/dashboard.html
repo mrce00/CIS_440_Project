@@ -138,30 +138,6 @@
 <p>This is your dashboard content.</p>
 <p><a href="{{ url_for('logout') }}">Logout</a></p>
 
-<a href="#createAccountModal" class="btn" id="createAccountBtn">Create Account</a>
-
-<!-- Create Account Form in a Popup -->
-<div id="createAccountModal" class="modal">
-    <div class="modal-content">
-        <span class="close" id="closeCreateAccountModal">&times;</span>
-        <h2>Create New Account</h2>
-        <form id="createAccountForm">
-            <label for="username">Username:</label><br>
-            <input type="text" id="username" name="username" required><br><br>
-            <label for="email">Email:</label><br>
-            <input type="email" id="email" name="email" required><br><br>
-            <label for="password">Password:</label><br>
-            <input type="password" id="password" name="password" required><br><br>
-            <label for="role">Role:</label><br>
-            <select id="role" name="role">
-                <option value="user">User</option>
-                <option value="manager">Manager</option>
-            </select><br><br>
-            <button type="submit">Create Account</button>
-            <button type="button" id="closeCreateAccountBtn">Cancel</button>
-        </form>
-    </div>
-</div>
 
 <h2>Set Survey Date Range</h2>
 <form action="{{ url_for('set_survey_date_range') }}" method="POST">
@@ -193,33 +169,6 @@
 <!-- Add this link somewhere appropriate in your dashboard.html -->
 <p><a href="{{ url_for('survey_results') }}" class="btn">View Survey Results</a></p>
 
-
-<h2>Accounts</h2>
-<table>
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Username</th>
-        <th>Email</th>
-        <th>Role</th> <!-- New column for Role -->
-        <th>Actions</th>
-    </tr>
-    </thead>
-    <tbody>
-    {% for account in accounts %}
-    <tr>
-        <td>{{ account.id }}</td>
-        <td>{{ account.username }}</td>
-        <td>{{ account.email }}</td>
-        <td>{{ account.role }}</td> <!-- Display Role value -->
-        <td class="center">
-            <a href="{{ url_for('edit_account', account_id=account.id) }}">Edit</a> |
-            <a href="{{ url_for('delete_account', account_id=account.id) }}">Delete</a>
-        </td>
-    </tr>
-    {% endfor %}
-    </tbody>
-</table>
 <!--
     Survey Results Tab (for management)
     <h2>Survey Results</h2>
