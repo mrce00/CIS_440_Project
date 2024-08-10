@@ -736,9 +736,9 @@ def get_questions(department):
     cursor = conn.cursor()
     
     # Fetch the number of questions to display from the ques_num table
-    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('general',))
+    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('general_question',))
     general_num_questions = cursor.fetchone()[0]
-    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('specific',))
+    cursor.execute('SELECT value FROM ques_num WHERE question_type = %s', ('specific_question',))
     specific_num_questions = cursor.fetchone()[0]
     
     # Fetch the questions from the specific and general questions tables
