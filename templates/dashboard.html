@@ -139,16 +139,6 @@
     <p><a href="{{ url_for('logout') }}">Logout</a></p>
 
 
-    <h2>Set Survey Date Range</h2>
-    <form action="{{ url_for('set_survey_date_range') }}" method="POST">
-        <label for="startDate">Start Date:</label>
-        <input type="date" id="startDate" name="startDate" required>
-        <label for="endDate">End Date:</label>
-        <input type="date" id="endDate" name="endDate" required>
-        <button type="submit" class="btn2">Set Survey Date Range</button>
-    </form>
-
-
     <!-- Set Survey Date Range Hyperlinked Button -->
     <!-- <a href="{{ url_for('set_survey_date_range') }}" class="btn">Set Survey Date Range</a> -->
     <!-- Create Questions Link -->
