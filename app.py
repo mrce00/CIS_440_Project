@@ -390,27 +390,6 @@ def set_num_ques_value():
         return redirect(url_for('set_num_ques'))
 
 
-@app.route('/create_account', methods=['POST'])
-@login_required
-def create_account():
-    # Placeholder for account creation logic
-    return jsonify({'status': 'success'})
-
-
-@app.route('/edit_account/<int:account_id>', methods=['GET', 'POST'])
-@login_required
-def edit_account(account_id):
-    # Placeholder for editing account logic
-    return f"Edit Account {account_id}"
-
-
-@app.route('/delete_account/<int:account_id>')
-@login_required
-def delete_account(account_id):
-    # Placeholder for deleting account logic
-    return redirect(url_for('dashboard'))
-
-
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5001/')
 
@@ -583,15 +562,16 @@ def survey_results():
         # Note: DATE_FORMAT can be changed to display different information on the graph if desired
         mycursor.execute("""
             SELECT             
-                DATE_FORMAT(r.period, '%M %d, %Y') AS period, 
-                q.question_text, 
+                DATE_FORMAT(r.period, '%M %d, %Y') AS period,
+                q.question AS question,
+                q.question_text AS question_number,
                 COALESCE(a.answer, 0) AS answer
             FROM 
-                responses_table r
-            CROSS JOIN 
                 questions_table q
             LEFT JOIN 
-                answers_table a ON r.response_id = a.response_id AND q.question_id = a.question_id
+                answers_table a ON q.question_id = a.question_id
+            LEFT JOIN 
+                responses_table r ON a.response_id = r.response_id
             ORDER BY 
                 r.period ASC, q.question_text ASC
         """)
