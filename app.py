@@ -390,27 +390,6 @@ def set_num_ques_value():
         return redirect(url_for('set_num_ques'))
 
 
-@app.route('/create_account', methods=['POST'])
-@login_required
-def create_account():
-    # Placeholder for account creation logic
-    return jsonify({'status': 'success'})
-
-
-@app.route('/edit_account/<int:account_id>', methods=['GET', 'POST'])
-@login_required
-def edit_account(account_id):
-    # Placeholder for editing account logic
-    return f"Edit Account {account_id}"
-
-
-@app.route('/delete_account/<int:account_id>')
-@login_required
-def delete_account(account_id):
-    # Placeholder for deleting account logic
-    return redirect(url_for('dashboard'))
-
-
 def open_browser():
     webbrowser.open_new('http://127.0.0.1:5001/')
 
