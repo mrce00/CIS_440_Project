@@ -122,132 +122,130 @@
     </style>
 </head>
 <body>
-<!-- Flash Messages -->
-{% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-<div class="flash-messages">
-    {% for category, message in messages %}
-    <div class="flash {{ category }}">{{ message }}</div>
-    {% endfor %}
-</div>
-{% endif %}
-{% endwith %}
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    <div class="flash-messages">
+        {% for category, message in messages %}
+        <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    {% endwith %}
 
-<h1>Welcome to the Dashboard</h1>
-<p>Hello, {{ current_user.id }}!</p>
-<p>This is your dashboard content.</p>
-<p><a href="{{ url_for('logout') }}">Logout</a></p>
-
-
-<h2>Set Survey Date Range</h2>
-<form action="{{ url_for('set_survey_date_range') }}" method="POST">
-    <label for="startDate">Start Date:</label>
-    <input type="date" id="startDate" name="startDate" required>
-    <label for="endDate">End Date:</label>
-    <input type="date" id="endDate" name="endDate" required>
-    <button type="submit" class="btn2">Set Survey Date Range</button>
-</form>
+    <h1>Welcome to the Dashboard</h1>
+    <p>Hello, {{ current_user.id }}!</p>
+    <p>This is your dashboard content.</p>
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
 
 
-<!-- Set Survey Date Range Hyperlinked Button -->
-<!-- <a href="{{ url_for('set_survey_date_range') }}" class="btn">Set Survey Date Range</a> -->
-
-<!-- Create Questions Link -->
-<a href="{{ url_for('questions') }}" class="btn">Create Questions</a>
-
-<!--Set Question Points Link-->
-<a href="{{ url_for('question_values') }}" class="btn">Set Question Points</a>
-<!--Storefront Link-->
-<a href="{{ url_for('storefront') }}" class="btn">Manage Storefront</a>
-
-<!--Shuffle Questions Button-->
-<p><button id="shuffle-button" onclick="shuffleQuestions()">Shuffle Questions</button></p>
-
-<!-- Set Num of Questions Link -->
-<p><a href="{{ url_for('set_num_ques') }}" class="btn">Set number of questions presented</a></p>
-
-<!-- Add this link somewhere appropriate in your dashboard.html -->
-<p><a href="{{ url_for('survey_results') }}" class="btn">View Survey Results</a></p>
-
-<!--
-    Survey Results Tab (for management)
-    <h2>Survey Results</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Productive</th>
-                <th>Obstacles</th>
-                <th>Support</th>
-                <th>Goals Met</th>
-                <th>Comments</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for survey in surveys %}
-            <tr>
-                <td>{{ survey.id }}</td>
-                <td>{{ survey.q1 }}</td>
-                <td>{{ survey.q2 }}</td>
-                <td>{{ survey.q3 }}</td>
-                <td>{{ survey.q4 }}</td>
-                <td>{{ survey.comments }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table> -->
+    <h2>Set Survey Date Range</h2>
+    <form action="{{ url_for('set_survey_date_range') }}" method="POST">
+        <label for="startDate">Start Date:</label>
+        <input type="date" id="startDate" name="startDate" required>
+        <label for="endDate">End Date:</label>
+        <input type="date" id="endDate" name="endDate" required>
+        <button type="submit" class="btn2">Set Survey Date Range</button>
+    </form>
 
 
-<!-- JavaScript for handling modals and form submission -->
-<script>
-    // Open Create Account Modal
-    document.getElementById('createAccountBtn').addEventListener('click', function() {
-        document.getElementById('createAccountModal').style.display = 'block';
-    });
+    <!-- Set Survey Date Range Hyperlinked Button -->
+    <!-- <a href="{{ url_for('set_survey_date_range') }}" class="btn">Set Survey Date Range</a> -->
+    <!-- Create Questions Link -->
+    <a href="{{ url_for('questions') }}" class="btn">Create Questions</a>
 
-    // Close Create Account Modal
-    document.getElementById('closeCreateAccountBtn').addEventListener('click', function() {
-        document.getElementById('createAccountModal').style.display = 'none';
-    });
+    <!--Set Question Points Link-->
+    <a href="{{ url_for('question_values') }}" class="btn">Set Question Points</a>
+    <!--Storefront Link-->
+    <a href="{{ url_for('storefront') }}" class="btn">Manage Storefront</a>
 
-    // Close Create Account Modal (click on <span>)
-    document.getElementById('closeCreateAccountModal').addEventListener('click', function() {
-        document.getElementById('createAccountModal').style.display = 'none';
-    });
+    <!--Shuffle Questions Button-->
+    <p><button id="shuffle-button" onclick="shuffleQuestions()">Shuffle Questions</button></p>
 
-    async function shuffleQuestions() {
-        // Disable the button to prevent multiple clicks
-        document.getElementById("shuffle-button").disabled = true;
-        document.getElementById("shuffle-button").innerHTML = "Shuffling...";
-        try {
-            // Make a POST request to the /shuffle_data endpoint
-            const response = await fetch("/shuffle_data", {
-                method: "POST"
-            });
-            // Check if the response was successful
-            if (response.ok) {
-                const result = await response.json();
-                if (result.message === "Data shuffled successfully!") {
-                    // Re-enable the button and change its text when the request is complete
-                    document.getElementById("shuffle-button").innerHTML = "Questions Shuffled!";
+    <!-- Set Num of Questions Link -->
+    <p><a href="{{ url_for('set_num_ques') }}" class="btn">Set number of questions presented</a></p>
+
+    <!-- Add this link somewhere appropriate in your dashboard.html -->
+    <p><a href="{{ url_for('survey_results') }}" class="btn">View Survey Results</a></p>
+
+    <p><a href="{{ url_for('survey_graph') }}" class="btn">View Survey Graph</a></p>
+    <!--
+        Survey Results Tab (for management)
+        <h2>Survey Results</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Productive</th>
+                    <th>Obstacles</th>
+                    <th>Support</th>
+                    <th>Goals Met</th>
+                    <th>Comments</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for survey in surveys %}
+                <tr>
+                    <td>{{ survey.id }}</td>
+                    <td>{{ survey.q1 }}</td>
+                    <td>{{ survey.q2 }}</td>
+                    <td>{{ survey.q3 }}</td>
+                    <td>{{ survey.q4 }}</td>
+                    <td>{{ survey.comments }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table> -->
+    <!-- JavaScript for handling modals and form submission -->
+    <script>
+        // Open Create Account Modal
+        document.getElementById('createAccountBtn').addEventListener('click', function () {
+            document.getElementById('createAccountModal').style.display = 'block';
+        });
+
+        // Close Create Account Modal
+        document.getElementById('closeCreateAccountBtn').addEventListener('click', function () {
+            document.getElementById('createAccountModal').style.display = 'none';
+        });
+
+        // Close Create Account Modal (click on <span>)
+        document.getElementById('closeCreateAccountModal').addEventListener('click', function () {
+            document.getElementById('createAccountModal').style.display = 'none';
+        });
+
+        async function shuffleQuestions() {
+            // Disable the button to prevent multiple clicks
+            document.getElementById("shuffle-button").disabled = true;
+            document.getElementById("shuffle-button").innerHTML = "Shuffling...";
+            try {
+                // Make a POST request to the /shuffle_data endpoint
+                const response = await fetch("/shuffle_data", {
+                    method: "POST"
+                });
+                // Check if the response was successful
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.message === "Data shuffled successfully!") {
+                        // Re-enable the button and change its text when the request is complete
+                        document.getElementById("shuffle-button").innerHTML = "Questions Shuffled!";
+                    } else {
+                        flash('Unable to shuffle questions. Please try again')
+                        document.getElementById("shuffle-button").disabled = false;
+                        document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
+                    }
                 } else {
                     flash('Unable to shuffle questions. Please try again')
                     document.getElementById("shuffle-button").disabled = false;
                     document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
                 }
-            } else {
+            } catch (error) {
+                // Handle the case where the request fails
                 flash('Unable to shuffle questions. Please try again')
                 document.getElementById("shuffle-button").disabled = false;
                 document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
             }
-        } catch (error) {
-            // Handle the case where the request fails
-            flash('Unable to shuffle questions. Please try again')
-            document.getElementById("shuffle-button").disabled = false;
-            document.getElementById("shuffle-button").innerHTML = "Shuffle Questions";
         }
-    }
-</script>
+    </script>
 </body>
 </html>
 
